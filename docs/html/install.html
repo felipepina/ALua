@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="pt-BR">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+	<title>ALua: Instala&ccedil;&atilde;o</title>
+
+	<meta name="author" content="Felipe Pina">
+</head>
+<body>
+<h2 class="title" align="center">ALua: Programa&ccedil;&atilde;o Paralela e Distribu&iacute;da em Lua</h2>
+
+<hr>
+
+<h3 class="section"><a name="install" id="install"></a>Instala&ccedil;&atilde;o</h3>
+
+<p align="justify">Antes de iniciar a instala&ccedil;&atilde;o certifique-se que os seguintes pr&eacute;-requisitos est&atilde;o instalados:</p>
+
+<ul>
+    <li>ptreads</li>
+    <li><a href="http://www.ossp.org/pkg/lib/uuid/">OSSP uuid</a></li>
+    <li><a href="http://www.threadingbuildingblocks.org/">Threading Building Blocks</a></li>
+</ul>
+
+<p align="justify">A seguir ser&atilde;o indicados os passos para fazer a instala&ccedil;&atilde;o do alua.</p>
+
+<ol compact="true">
+    <li>Fa&ccedil;a o download do <a href="alua.tar.gz">alua</a></li>
+    <li>Extraia o arquivo com o comando:</li>
+    
+    <pre class="terminal">tar -xzvf alua.tar.gz</pre>
+
+    <li>Configure no arquivo <code>configure</code> as seguintes vari&aacute;veis:</li>
+
+<pre class="terminal"># Include path
+IPATH=-I. -I/usr/include -I/usr/local/include -I/opt/local/include
+# Library path
+LPATH=-L/usr/lib -L/usr/local/lib -L/opt/local/lib
+# Lua library install path
+LUA_INSTALL_LIB_PATH=/usr/local/lib/lua/5.1
+# Lua install path
+LUA_INSTALL_PATH=/usr/local/share/lua/5.1</pre>
+
+    <li>Compile e instale a biblioteca luasocket:</li>
+
+<pre class="terminal">$ cd luasocket
+$ make
+$ make install</pre>
+
+    <li>Execute o comando a seguir para carregar a biblioteca e verificar a instala&ccedil;&atilde;o (n&atilde;o devem ser exibidas mensagens de erro):</li>
+
+    <pre class="terminal">$ lua -l socket</pre>
+
+    <li>Compile e instale a biblioteca uuid:</li>
+
+    <pre class="terminal">$ cd uuid
+$ make
+$ make install</pre>
+
+    <li>Execute o comando a seguir para carregar a biblioteca e verificar a instala&ccedil;&atilde;o (n&atilde;o devem ser exibidas mensagens de erro):</li>
+
+    <pre class="terminal">$ lua -l uuid</pre>
+
+    <li>Compile e instale a biblioteca rawsend:</li>
+
+    <pre class="terminal">$ cd rawsend
+$ make
+$ make install</pre>
+
+    <li>Execute o comando a seguir para carregar a biblioteca e verificar a instala&ccedil;&atilde;o (n&atilde;o devem ser exibidas mensagens de erro):</li>
+
+    <pre class="terminal">$ lua -l rawsend</pre>
+
+    <li>Compile e instale a biblioteca ccr:</li>
+
+    <pre class="terminal">$ cd ccr
+$ make
+$ make install</pre>
+
+    <li>Execute o comando a seguir para carregar a biblioteca e verificar a instala&ccedil;&atilde;o (n&atilde;o devem ser exibidas mensagens de erro):</li>
+
+    <pre class="terminal">$ lua -l ccr</pre>
+
+    <li>Compile e instale o alua:</li>
+
+    <pre class="terminal">$ cd alua
+$ make
+$ make install</pre>
+
+    <li>Execute o comando a seguir para carregar a biblioteca e verificar a instala&ccedil;&atilde;o (n&atilde;o devem ser exibidas mensagens de erro):</li>
+
+    <pre class="terminal">$ lua -l alua</pre>
+</ol>
+
+</body>
+</html>

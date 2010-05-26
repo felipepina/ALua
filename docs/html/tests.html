@@ -1,0 +1,346 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+<html lang="pt-br">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>
+            Cenários de Teste
+        </title>
+        <meta name="author" content="Felipe Pina">
+        <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <body>
+        <table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
+            <tbody>
+                <tr>
+                    <th>
+                        Cenário
+                    </th>
+                    <th>
+                        Descrição
+                    </th>
+                </tr>
+                <tr class="subhead">
+                    <td>
+                        1
+                    </td>
+                    <td>
+                        Um Daemon
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        1.1
+                    </td>
+                    <td>
+                        Criar de daemon
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        1.2
+                    </td>
+                    <td>
+                        Criar um daemon e conectar o processo roteador a ele.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        1.3
+                    </td>
+                    <td>
+                        Enviar um comando do processo roteador para o daemon executar.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        1.4
+                    </td>
+                    <td>
+                        Criar um novo processo Lua associado ao daemon e realizar troca de mensagens entre o novo processo e o daemon.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        1.5
+                    </td>
+                    <td>
+                        Criar dois novos processos Lua associados ao daemon e realizar troca de mensagens entre eles.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        1.6
+                    </td>
+                    <td>
+                        Criar novo processo Lua no daemon. Processo roteador troca mensagens com o processo Lua no daemon.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        1.7
+                    </td>
+                    <td>
+                        Criar dois processos Lua, um no daemon e outro no processo roteador. Realizar troca de mensagens entre eles.
+                    </td>
+                </tr>
+                <tr class="subhead">
+                    <td>
+                        2
+                    </td>
+                    <td>
+                        Rede de daemons
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        2.1
+                    </td>
+                    <td>
+                        Criar dois daemons e conectá-los. Realizar troca de mensagens entre eles.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        2.2
+                    </td>
+                    <td>
+                        Criar três daemons e conectá-los. Realizar troca de mensagens entre eles.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        2.3
+                    </td>
+                    <td>
+                        Criar três daemons e conectá-los. Cria mais um daemon e conectá-lo somente a um dos três anteriormente ligados em rede. Realizar troca de mensagens entre eles.
+                    </td>
+                </tr>
+                <tr class="bug">
+                    <td>
+                        BUG
+                    </td>
+                    <td>
+                        Quando um daemon se conecta a uma rede de daemon já estabelecida, é possível enviar mensagem dele para qualquer outro daemon já pertencente a rede. Porém o inverso não é possível.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        2.4
+                    </td>
+                    <td>
+                        Em uma rede de três daemons criar em cada daemon da rede um processo Lua. Realizar troca de mensagens entres os processos.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        2.5
+                    </td>
+                    <td>
+                        Criar três daemons. Conectar apenas dois em rede. Enviar mensagem de um daemon da rede para o daemon fora da rede. Não será possível enviar esta mensagem.
+                    </td>
+                </tr>
+                <tr class="subhead">
+                    <td>
+                        3
+                    </td>
+                    <td>
+                        UUID
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        3.1
+                    </td>
+                    <td>
+                        Criar um novo identificador único no formato binário.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        3.2
+                    </td>
+                    <td>
+                        Criar um novo identificador único no formato de string ASCII.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        3.3
+                    </td>
+                    <td>
+                        Criar um novo identificador único no formato numérico.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        3.3
+                    </td>
+                    <td>
+                        Criar um novo identificador único no formato textual.
+                    </td>
+                </tr>
+                <tr class="subhead">
+                    <td>
+                        4
+                    </td>
+                    <td>
+                        Rawsend
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        4.1
+                    </td>
+                    <td>
+                        Registra um par (nome, socket) para enviar dados (função setfd)
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        4.2
+                    </td>
+                    <td>
+                        Envia dado para um nome registrado (função send). Verificar se o retorno da função é igual a 1 e se os dados foram recebidos.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        4.3
+                    </td>
+                    <td>
+                        Envia dado para um nome não registrado (função send). Verificar se o retorno da função é igual a -1.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        4.4
+                    </td>
+                    <td>
+                        Envia dado para um nome registrado (função send) de múltiplas fontes em paralelo. Verificar se o retorno da função é igual a 1 e se os dados foram recebidos.
+                    </td>
+                </tr>
+                <tr class="subhead">
+                    <td>
+                        5
+                    </td>
+                    <td>
+                        CCR
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        5.1
+                    </td>
+                    <td>
+                        Verificar se o valor de ismain é true
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        5.2
+                    </td>
+                    <td>
+                        Criar um novo processo (função spawn)
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        5.3
+                    </td>
+                    <td>
+                        Buscar no processo principal pelo novo processo. Não será encontrado pois não foi registrado.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        5.4
+                    </td>
+                    <td>
+                        Registrar o novo processo
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        5.5
+                    </td>
+                    <td>
+                        Buscar no processo principal pelo processo registrado. Será encontrado.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        5.6
+                    </td>
+                    <td>
+                        Remover o processo.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        5.7
+                    </td>
+                    <td>
+                        Buscar no processo principal pelo novo processo. Não será encontrado pois não está mais registrado.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        5.8
+                    </td>
+                    <td>
+                        Criar dois processos e registrá-los.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        5.9
+                    </td>
+                    <td>
+                        Processo principal envia dados para os dois novos processos.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        5.10
+                    </td>
+                    <td>
+                        Processos "filhos" verificam se existe dado a receber (função hasdata). Deve retornar true.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        5.11
+                    </td>
+                    <td>
+                        Processos "filhos" recebem os dados (função receive)
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        5.12
+                    </td>
+                    <td>
+                        Processos "filhos" verificam se existe novo dado a receber (função hasdata). Deve retornar false.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        5.13
+                    </td>
+                    <td>
+                        Processos chamam a função receive e aguardam o recebimento de dados. Processo principal envia os dados.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        5.14
+                    </td>
+                    <td>
+                        Processos filhos chamam a função tryreceive para verificar se há dados, como não há continuam a execução
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
+</html>

@@ -1,0 +1,8 @@
+# Include path
+IPATH=-I/usr/include -I/usr/local/include -I/opt/local/include
+# Library path
+LPATH=-L/usr/lib -L/usr/local/lib -L/opt/local/lib
+# Lua library install path
+LUA_INSTALL_LIB_PATH=/usr/local/lib/lua/5.1
+# Lua install path
+LUA_INSTALL_PATH=/usr/local/share/lua/5.1

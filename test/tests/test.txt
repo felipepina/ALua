@@ -1,0 +1,22 @@
+01: Roteador manda mensagem para ele mesmo.
+
+02: Roteador se comunica com uma thread.
+A  <-->  R
+
+03: Duas threads se comunicam. Roteador transparente.
+A  <-->  R  <-->  B
+
+04: Comunicação entre o roteador e o daemon
+R  <-->  D
+
+05: Comunicação entre uma thread e o daemon
+A  <-->  R  <-->  D
+
+06: Comunicação entre roteador e o daemon
+R  <-->  R1  <-->  R2
+
+07: Comunicação entre uma thread no roteador com o daemon
+A  <-->  R  <-->  D1  <-->  D2
+
+08: Comunicação entre uma thread no roteador e uma tread no daemon
+A  <-->  R  <-->  D1  <-->  D2  <-->  B

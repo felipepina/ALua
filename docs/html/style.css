@@ -1,0 +1,150 @@
+body {
+	font-family: verdana, sans-serif;
+	font-size: small;
+	line-height: 150%;  
+	margin-left: 15%;
+	margin-right: 15%;
+}
+
+.update{
+     font-size: 9px;
+}
+
+h2.title {
+	font-size: medium;
+	font-weight: bold;
+	border-bottom: 0px;
+	margin-bottom: 0px;
+}
+
+h3.section {
+	font-weight: bold;
+/*	border-bottom: 1px dashed black;*/
+	border: 5px solid #F0F0F0;
+	color: #000000 ;
+	background-color: #F0F0F0 ;
+}
+
+h4.subsection {
+	font-weight: bold;
+/*	border-bottom: 1px dashed black;*/
+	border: 5px solid #F0F0F0;
+	color: #000000 ;
+	background-color: #F0F0F0 ;
+}
+
+table.download {
+	border: 1px dashed black;
+}
+
+a:link, a:visited, a:active {
+	text-decoration: none;
+}
+
+a:hover {
+	color: red;
+}
+
+/*body {
+	color: #000000 ;
+	background-color: #FFFFFF ;
+	font-family: sans-serif ;
+	text-align: justify ;
+	margin-right: 20px ;
+	margin-left: 20px ;
+}
+
+h1, h2, h3, h4 {
+	font-weight: normal ;
+	font-style: italic ;
+}
+
+a:link {
+	color: #000080 ;
+	background-color: inherit ;
+	text-decoration: none ;
+}
+
+a:visited {
+	background-color: inherit ;
+	text-decoration: none ;
+}
+
+a:link:hover, a:visited:hover {
+	color: #000080 ;
+	background-color: #E0E0FF ;
+}
+
+a:link:active, a:visited:active {
+	color: #FF0000 ;
+}
+
+hr {
+	border: 0 ;
+	height: 1px ;
+	color: #a0a0a0 ;
+	background-color: #a0a0a0 ;
+}
+
+:target {
+	background-color: #F8F8F8 ;
+	padding: 8px ;
+	border: solid #a0a0a0 2px ;
+}
+
+h3 code {
+	font-family: inherit ;
+}*/
+
+.terminal {
+/* font-family: inherit ;*/
+/* margin-left: 20px ;*/
+margin: 2em 0 2.5em 0;
+padding: 5px 0 5px 20px;
+border-width: 1px 1px 1px 1px;
+background-color: #F0F0F0;
+border-color: #6b6b6b;
+border-style: dashed;
+}
+
+.inline{
+	font-weight: bold;
+}
+/*pre {
+font-size: 105% ;
+}
+*/
+
+/*span.apii {
+	float: right ;
+	font-family: inherit ;
+}*/
+
+table.reference {
+	border: 1px solid #6b6b6b;
+	border-collapse: collapse;
+}
+
+table.reference th {
+	background-color: #F0F0F0;
+	border: 1px solid #6b6b6b;
+	padding: 3px;
+	vertical-align: center;
+}
+
+table.reference td {
+	border: 1px solid #6b6b6b;
+	padding: 3px;
+	vertical-align: center;
+}
+
+tr.subhead {
+	background-color: #F0F0F0;
+}
+
+tr.bug {
+/*	border: 1px solid #6b6b6b;*/
+	background-color: #FF9999;
+/*	padding: 3px;
+	vertical-align: top;*/
+}
