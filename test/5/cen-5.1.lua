@@ -1,24 +1,16 @@
 -----------------------------------------------------------------------------
 -- Test script
--- Scenario 4.3
+-- Scenario 5.1
 -----------------------------------------------------------------------------
 
-require("rawsend")
-require("socket")
+require("ccr")
 
-local cen = "4.3"
+local cen = "5.1"
 local suc_msg = "Scenario " .. cen .. ": ok!"
 local err_msg = "Scenario " .. cen .. ": erro!"
 
-
-local sck = socket.connect("127.0.0.1", 8888)
-
-rawsend.setfd("socket1", sck:getfd())
-
-local data = "DATA"
-
-local ret = assert(rawsend.send("socket2", data .. "\n") == -1, err_msg)
+local ret = assert(ccr.ismain, err_msg)
 
 if ret then
-	print(suc_msg)
+    print(suc_msg)
 end

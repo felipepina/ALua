@@ -119,7 +119,8 @@ function create(code, cb)
             ]], alua.id, idx)
     end
     -- TODO Verificar se retornar o retorno de ccr.spawn possui algum impacto
-    return ccr.spawn(string.format([[
+    -- return
+    ccr.spawn(string.format([[
         require("alua")
         alua.id = "%s/%s"
         alua.daemonid = %q

@@ -1,18 +1,20 @@
 -----------------------------------------------------------------------------
 -- Test script
--- Scenario 4.1
+-- Scenario 1.2
 -----------------------------------------------------------------------------
 
-require("rawsend")
-require("socket")
-
-local cen = "4.1"
+local cen = "1.2"
 local suc_msg = "Scenario " .. cen .. ": ok!"
 local err_msg = "Scenario " .. cen .. ": erro!"
 
-sck = socket.bind("127.0.0.1", 8888)
+local ret = false
 
-assert(rawsend.setfd("socket1", sck:getfd()) == nil, err_msg)
-
-print(suc_msg)
-
+function conncb(reply)
+    ret = assert(reply.status == "ok", err_msg)
+    
+    if ret then
+     print(suc_msg)
+     alua.send(alua.daemonid, "alua.quit()")
+     alua.quit()
+    end
+end

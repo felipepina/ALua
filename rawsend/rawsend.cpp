@@ -91,7 +91,7 @@ static int sck_send(lua_State *L)
         lua_pushnumber(L, -1);
         return 1;
     }
-    //cout << "Sending " << name << endl;
+    // cout << "Sending " << name << endl;
     // acquire the write lock of the socket
     pthread_mutex_lock(&tmp->lock);
     res = rawsend(tmp->sock, data, size);

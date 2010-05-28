@@ -247,7 +247,10 @@ static int ccr_spawn(lua_State *L)
                     lua_pushboolean(L, 1);
                     return 1;
                 }
-                cerr << "[ERRO] " << lua_tostring(proc->L, -1) << endl;
+                /*
+                    TODO Retornar isto ao processo chamador
+                */
+                cerr << "[ERROR][CREATING LUA PROCESS] " << lua_tostring(proc->L, -1) << endl;
                 lua_close(proc->L);
             }
             mbx_free(proc->mbox);
@@ -268,7 +271,9 @@ static int ccr_finalize(lua_State *L)
     if (proc->main)
     {
         for (i = 0; i < THR_SIZE; i++)
+        {
             prc_ready.push(NULL);
+        }
 
         for (list<pthread_t>::iterator thread = thr_pool.begin(); thread!=thr_pool.end(); ++thread)
         {
@@ -337,7 +342,8 @@ static void* ccr_worker(void *arg)
     {
         // Checks if threads need to be killed and the the ready procces's queue is empty
         // That way only when the queue is empty the threads are killed
-        if ((free_flag.compare_and_swap(false, true)) && (prc_ready.empty()))
+        // if ((free_flag.compare_and_swap(false, true)) && (prc_ready.empty()))
+        if (free_flag.compare_and_swap(false, true))
         {
             pthread_t thread = pthread_self();
             // removes reference from the pool
@@ -376,7 +382,7 @@ static void* ccr_worker(void *arg)
             case LUA_ERRRUN:
             case LUA_ERRMEM:
             case LUA_ERRERR:
-                cerr << "[ERRO] " << lua_tostring(proc->L, -1) << endl;
+                cerr << "[ERROR][PROCESSING A LUA PROCESS] " << lua_tostring(proc->L, -1) << endl;
                 // fall-through
             case 0:
                 lua_close(proc->L);
@@ -445,7 +451,7 @@ static int ccr_dec_workers(lua_State *L)
         // sets the flag indication to kill threads
         free_flag.compare_and_swap(true, false);
         // returns the current number of threads in the pool
-        lua_pushinteger(L, (lua_Integer) thr_pool.size());
+        lua_pushinteger(L, (lua_Integer) thr_pool.size() - count);
         return 1;
     }
     lua_pushinteger(L, 0);

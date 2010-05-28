@@ -17,7 +17,7 @@ rawsend.setfd("socket1", sck:getfd())
 
 local data = "DATA"
 
-local ret = assert(rawsend.send("socket2", data .. "\n") == -1, err_msg)
+local ret = assert(rawsend.send("socket1", data .. "\n") == -1, err_msg)
 
 if ret then
 	print(suc_msg)

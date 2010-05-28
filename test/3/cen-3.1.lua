@@ -1,10 +1,7 @@
---
--- Script de teste
---
--- Cenarios de validacao da biblioteca UUID
---
--- Cenario 3.1 - Criar um novo identificador único no formato binário.
---
+-----------------------------------------------------------------------------
+-- Test script
+-- Scenario 3.1
+-----------------------------------------------------------------------------
 
 require("uuid")
 

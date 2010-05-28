@@ -53,6 +53,24 @@ local pending = {}
 local terminate = false
 local receive_handler
 
+-- Internal ALua events
+ALUA_AUTH               = "alua-auth"
+ALUA_AUTH_REPLY         = "alua-auth-reply"
+ALUA_FORK               = "alua-fork"
+ALUA_FORK_REPLY         = "alua-fork-reply"
+ALUA_CODE               = "alua-fork-code"
+ALUA_CODE_REPLY         = "alua-fork-code-reply"
+ALUA_EXECUTE            = "alua-execute"
+ALUA_EXECUTE_REPLY      = "alua-execute-reply"
+ALUA_RECEIVE_DATA       = "alua-receive-data"
+ALUA_RECEIVE_DATA_REPLY = "alua-receive-data-reply"
+ALUA_LINK_START         = "alua-link-start"
+ALUA_LINK_REPLY         = "alua-link-start-reply"
+ALUA_LINK_DAEMON        = "alua-link-daemon"
+ALUA_LINK_REPLY         = "alua-link-daemon-reply"
+ALUA_BONJOUR            = "alua-bonjour"
+ALUA_ROUTE              = "alua-route"
+
 -----------------------------------------------------------------------------
 -- Exported low-level functions
 -----------------------------------------------------------------------------
@@ -213,6 +231,8 @@ local function routemsg(dst, msg)
         -- The destination is in same ALua process?
         -- If true, sends through the intra-process queue (CCR)
         local proc = match(dst, "^(%d+%.%d+%.%d+%.%d+:%d+/%d+)")
+        -- TODO 
+        print("proc", proc)
         if proc == match(alua.id, "^(%d+%.%d+%.%d+%.%d+:%d+/%d+)") then
             return mbox.send(dst, msg)
         else
@@ -225,10 +245,14 @@ local function routemsg(dst, msg)
                 if not conn then
                     return false, "unknown destination"
                 else
+                    -- TODO 
+                    print("tcp.send", alua.id, conn, tostring(msg))
                     return tcp.send(conn, msg)
                     --return tcp.rawsend(conn, msg)
                 end
             else -- Send to daemon
+                -- TODO 
+                print("tcp.rawsend", alua.id, alua.daemonid, tostring(msg))
                 return tcp.rawsend(alua.daemonid, msg)
             end
         -- TODO Retirar linhas abaixo
@@ -342,97 +366,6 @@ local function auth_reply(msg)
 end
 
 -----------------------------------------------------------------------------
--- "Create a new ALua process" event handler
--- Message definition:
---      type    = "fork"
---      src     the requester id
---      dst     the destination daemon id
---      chunk   the initial's new process code
------------------------------------------------------------------------------
-local function fork(msg)
-    local chunk = msg.chunk
-
-    -- The original process
-    -- original caller of 'newprocess'
-    local srcfrk, cbfrk = msg.src, msg.cb
-    
-    -- The new process will call this callback
-    local function callback(m)
-        local tb = {
-            type    = "fork-code-reply",
-            src     = alua.id,
-            dst     = m.src,    -- new process
-            chunk   = chunk,
-            status  = "ok",
-            srcfrk  = srcfrk,   -- original process
-            cbfrk   = cbfrk,    -- original process callback
-        }
-        routemsg(tb.dst, tb)
-    end -- callback function
-    
-    -- Daemon callback
-    local daemoncb = setcb(callback)
-    -- Daemon ip and port
-    local dip, dport = match(alua.id, "^(%d+%.%d+%.%d+%.%d+):(%d+)")
-
-    -- Creates a new process and starts the lauch function
-    core.execute("lua", "-l", "alua", "-e", 
-                format("alua.launch(%q, %s, %q, %d)", dip, dport, chunk, daemoncb))
-end
-
------------------------------------------------------------------------------
--- "Create a new ALua process reply" event handler
--- Message definition:
---      type    = "fork-reply"
---      status  "ok" or "error"
---      src     the new process id
---      dst     the requester id
---      cb      requester callback
------------------------------------------------------------------------------
-local function fork_reply(msg)
-    local cb = getcb(msg.cb)
-    cb({status=msg.status, id=msg.src})
-end
-
------------------------------------------------------------------------------
--- "Fork code" event handler
--- Message definition:
---      type    = "fork-code"
---      src     the new process id
---      dst     the daemon id
---      cb      the new process callback
------------------------------------------------------------------------------
-local function fork_code(msg)
-    local cb = getcb(msg.cb)
-    cb(msg)
-end
-
------------------------------------------------------------------------------
--- "Fork code reply" event handler
--- Message definition:
---      type    = "fork-code-reply"
---      status  "ok" or "error"
---      src     the daemon id
---      dst     new process id
---      chunk   the initial new process code 
---      srcfrk  the requeter id
---      cbfrk   the requester callback
------------------------------------------------------------------------------
-local function fork_code_reply(msg)
-    if msg.cbfrk then
-        local tb = {
-            type = "fork-reply",
-            src = alua.id,
-            dst = msg.srcfrk,
-            status = "ok",
-            cb = msg.cbfrk,
-        }
-        routemsg(tb.dst, tb)
-    end
-    execute(msg)
-end
-
------------------------------------------------------------------------------
 -- Execute event handler
 -- Message definition:
 --      type    = "execute"
@@ -442,6 +375,12 @@ end
 --      cb      the sender callback
 -----------------------------------------------------------------------------
 local function execute(msg)
+    -- TODO 
+    if not msg.chunk then
+        print("\n\n")
+        print("execute", alua.id, msg.type, msg.src, msg.dst, msg.cb)
+        print("\n\n")
+    end
     local succ, e = dostring(msg.chunk)
     if msg.cb then
         local tb = {
@@ -536,6 +475,98 @@ local function receive_data_reply(msg)
     else
         cb({src=msg.src, status="ok"})
     end
+end
+
+-----------------------------------------------------------------------------
+-- "Create a new ALua process" event handler
+-- Message definition:
+--      type    = "fork"
+--      src     the requester id
+--      dst     the destination daemon id
+--      chunk   the initial's new process code
+-----------------------------------------------------------------------------
+local function fork(msg)
+    local chunk = msg.chunk
+
+    -- The original process
+    -- original caller of 'newprocess'
+    local srcfrk, cbfrk = msg.src, msg.cb
+    
+    -- The new process will call this callback
+    local function callback(m)
+        local tb = {
+            type    = "fork-code-reply",
+            src     = alua.id,
+            dst     = m.src,    -- new process
+            chunk   = chunk,
+            status  = "ok",
+            srcfrk  = srcfrk,   -- original process
+            cbfrk   = cbfrk,    -- original process callback
+        }
+        routemsg(tb.dst, tb)
+    end -- callback function
+    
+    -- Daemon callback
+    local daemoncb = setcb(callback)
+    -- Daemon ip and port
+    local dip, dport = match(alua.id, "^(%d+%.%d+%.%d+%.%d+):(%d+)")
+
+    -- Creates a new process and starts the lauch function
+    core.execute("lua", "-l", "alua", "-e", 
+                format("alua.launch(%q, %s, %d)", dip, dport, daemoncb))
+end
+
+-----------------------------------------------------------------------------
+-- "Create a new ALua process reply" event handler
+-- Message definition:
+--      type    = "fork-reply"
+--      status  "ok" or "error"
+--      src     the new process id
+--      dst     the requester id
+--      cb      requester callback
+-----------------------------------------------------------------------------
+local function fork_reply(msg)
+    local cb = getcb(msg.cb)
+    cb({status=msg.status, id=msg.src})
+end
+
+-----------------------------------------------------------------------------
+-- "Fork code" event handler
+-- Message definition:
+--      type    = "fork-code"
+--      src     the new process id
+--      dst     the daemon id
+--      cb      the new process callback
+-----------------------------------------------------------------------------
+local function fork_code(msg)
+    local cb = getcb(msg.cb)
+    cb(msg)
+end
+
+-----------------------------------------------------------------------------
+-- "Fork code reply" event handler
+-- Message definition:
+--      type    = "fork-code-reply"
+--      status  "ok" or "error"
+--      src     the daemon id
+--      dst     new process id
+--      chunk   the initial new process code 
+--      srcfrk  the requeter id
+--      cbfrk   the requester callback
+-----------------------------------------------------------------------------
+local function fork_code_reply(msg)
+    -- TODO Antes de enviar a resposta verificar se o codigo inicial executou com sucesso
+    if msg.cbfrk then
+        local tb = {
+            type = "fork-reply",
+            src = alua.id,
+            dst = msg.srcfrk,
+            status = "ok",
+            cb = msg.cbfrk,
+        }
+        routemsg(tb.dst, tb)
+    end
+    execute(msg)
 end
 
 -----------------------------------------------------------------------------
@@ -797,6 +828,9 @@ local function route(tmp)
         -- If the message has a status, it is a reply: discart it.
         if e and msg.cb and not msg.status then
             local tb = {
+                -- TODO Corrigir o envio do retorno quando nao ha rota para o destino
+                -- o tipo da mensagem deve ser outro dai cria-se um novo tratador
+                -- type = msg.type .. "-reply",
                 type = msg.type,
                 src = alua.id,
                 dst = msg.src,
@@ -804,6 +838,8 @@ local function route(tmp)
                 error = e,
                 cb = msg.cb,
             }
+            -- TODO 
+            print("route", "error", alua.id, tostring(tb))
             routemsg(msg.src, tb)
         end
     end
@@ -989,7 +1025,7 @@ end
 -- @param code the initial code to execute
 -- @param cb the callback function
 -----------------------------------------------------------------------------
-function launch(ip, port, code, cb)
+function launch(ip, port, cb)
     -- begin function
     local function conncb(r)
         if r.status == "ok" then
@@ -1013,8 +1049,6 @@ function launch(ip, port, code, cb)
     end
 
     connecting = true
-
-    assert(loadstring(code))()
 
     return loop()
 end
@@ -1059,6 +1093,7 @@ end
 -----------------------------------------------------------------------------
 function spawn(code, luap, cb)
     if luap then
+        -- TODO Retornar via evento?
         newthread(code, cb)
     else
         newprocess(alua.daemonid, code, cb)

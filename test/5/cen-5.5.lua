@@ -1,24 +1,26 @@
 -----------------------------------------------------------------------------
 -- Test script
--- Scenario 4.3
+-- Scenario 5.5
 -----------------------------------------------------------------------------
 
-require("rawsend")
-require("socket")
+require("ccr")
 
-local cen = "4.3"
+local cen = "5.5"
 local suc_msg = "Scenario " .. cen .. ": ok!"
 local err_msg = "Scenario " .. cen .. ": erro!"
 
+local code = [[
+    require("ccr")
+    
+    ccr.register("p2", ccr.self)
+]]
 
-local sck = socket.connect("127.0.0.1", 8888)
+ccr.spawn(code)
 
-rawsend.setfd("socket1", sck:getfd())
+os.execute("sleep 3")
 
-local data = "DATA"
-
-local ret = assert(rawsend.send("socket2", data .. "\n") == -1, err_msg)
+local ret = assert(ccr.lookup("p2"), err_msg)
 
 if ret then
-	print(suc_msg)
+    print(suc_msg)
 end
