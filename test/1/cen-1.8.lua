@@ -15,12 +15,16 @@ local function start(reply)
     local code = [[assert(alua.id == %q, err_msg)]]
     -- print("count", count)
     
-    if count == 500 then
-        print(alua.inc_threads(15))
-    elseif count == 3000 then
-        print(alua.dec_threads(10))
-    end
+    -- if count == 500 then
+    --     print(alua.inc_threads(15))
+    -- elseif count == 3000 then
+    --     print(alua.dec_threads(10))
+    -- end
     
+    if count == 10 then
+        alua.inc_threads(30)
+    end
+
     if count < 5000 then
         alua.send(reply.src, string.format(code, reply.src), start)
         count = count + 1

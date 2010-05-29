@@ -1,12 +1,12 @@
 -----------------------------------------------------------------------------
 -- Test script
--- Scenario 4.3
+-- Scenario 4.4
 -----------------------------------------------------------------------------
 
 require("rawsend")
 require("socket")
 
-local cen = "4.3"
+local cen = "4.4"
 local suc_msg = "Scenario " .. cen .. ": ok!"
 local err_msg = "Scenario " .. cen .. ": erro!"
 

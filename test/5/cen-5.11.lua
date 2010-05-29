@@ -1,17 +1,17 @@
 -----------------------------------------------------------------------------
 -- Test script
--- Scenario 5.10
+-- Scenario 5.11
 -----------------------------------------------------------------------------
 
 require("ccr")
 
-local cen = "5.10"
+local cen = "5.11"
 local suc_msg = "Scenario " .. cen .. ": ok!"
 local err_msg = "Scenario " .. cen .. ": erro!"
 
 local code = [[
     require("ccr")
-    local cen = "5.10"
+    local cen = "5.11"
     local suc_msg = "Scenario " .. cen .. ": ok!"
     local err_msg = "Scenario " .. cen .. ": erro!"
     

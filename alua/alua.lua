@@ -70,6 +70,7 @@ ALUA_LINK_DAEMON        = "alua-link-daemon"
 ALUA_LINK_REPLY         = "alua-link-daemon-reply"
 ALUA_BONJOUR            = "alua-bonjour"
 ALUA_ROUTE              = "alua-route"
+ALUA_ROUTE_REPLY        = "alua-route-reply"
 
 -----------------------------------------------------------------------------
 -- Exported low-level functions
@@ -231,8 +232,6 @@ local function routemsg(dst, msg)
         -- The destination is in same ALua process?
         -- If true, sends through the intra-process queue (CCR)
         local proc = match(dst, "^(%d+%.%d+%.%d+%.%d+:%d+/%d+)")
-        -- TODO 
-        print("proc", proc)
         if proc == match(alua.id, "^(%d+%.%d+%.%d+%.%d+:%d+/%d+)") then
             return mbox.send(dst, msg)
         else
@@ -245,14 +244,10 @@ local function routemsg(dst, msg)
                 if not conn then
                     return false, "unknown destination"
                 else
-                    -- TODO 
-                    print("tcp.send", alua.id, conn, tostring(msg))
                     return tcp.send(conn, msg)
                     --return tcp.rawsend(conn, msg)
                 end
             else -- Send to daemon
-                -- TODO 
-                print("tcp.rawsend", alua.id, alua.daemonid, tostring(msg))
                 return tcp.rawsend(alua.daemonid, msg)
             end
         -- TODO Retirar linhas abaixo
@@ -375,12 +370,6 @@ end
 --      cb      the sender callback
 -----------------------------------------------------------------------------
 local function execute(msg)
-    -- TODO 
-    if not msg.chunk then
-        print("\n\n")
-        print("execute", alua.id, msg.type, msg.src, msg.dst, msg.cb)
-        print("\n\n")
-    end
     local succ, e = dostring(msg.chunk)
     if msg.cb then
         local tb = {
@@ -831,18 +820,33 @@ local function route(tmp)
                 -- TODO Corrigir o envio do retorno quando nao ha rota para o destino
                 -- o tipo da mensagem deve ser outro dai cria-se um novo tratador
                 -- type = msg.type .. "-reply",
-                type = msg.type,
+                type = "route-reply",
                 src = alua.id,
                 dst = msg.src,
                 status = "error",
                 error = e,
                 cb = msg.cb,
             }
-            -- TODO 
-            print("route", "error", alua.id, tostring(tb))
             routemsg(msg.src, tb)
         end
     end
+end
+
+-----------------------------------------------------------------------------
+-- Route message reply event handler
+-- Will be dispatched when no route could be found
+-- Message definition:
+--      type    = "route-reply"
+--      status  "error"
+--      error   the error message
+--      scr     the last hop reached
+--      dst     the sender's id
+--      cb      the sender's callback
+-----------------------------------------------------------------------------
+local function route_reply(msg)
+    local cb = getcb(msg.cb)
+    -- Use the most general fields in the message
+    cb({status=msg.status, error=msg.error})
 end
 
 -----------------------------------------------------------------------------
@@ -873,6 +877,7 @@ event.register("link-daemon-reply",     link_reply)
 event.register("bonjour",               bonjour)
 
 event.register("route",                 route)
+event.register("route-reply",           route_reply)
 -----------------------------------------------------------------------------
 -- End registered events
 -----------------------------------------------------------------------------

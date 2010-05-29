@@ -7,8 +7,16 @@ local cen = "1.6"
 local suc_msg = "Scenario " .. cen .. ": ok!"
 local err_msg = "Scenario " .. cen .. ": erro!"
 
+local count = 0
+
 local function sendcb(reply)
 	assert(reply.status == "ok", error_msg)
+	count = count + 1
+	if count == 2 then
+	    alua.send(alua.daemonid, "alua.quit()")
+	    print(suc_msg)
+	    alua.quit()
+    end
 end
 
 local function spawncb(reply)
@@ -29,22 +37,14 @@ function conncb(reply)
         local suc_msg = "Scenario " .. cen .. ": ok!"
         local err_msg = "Scenario " .. cen .. ": erro!"
 
-        local ret = false
-            
 		local function sendcb(reply)
-			ret = assert(reply.status == "ok", error_msg)
-
-			if ret then
-				print(suc_msg)
-				alua.send(alua.daemonid, "alua.quit()")
-				alua.quit()
-			end
+			assert(reply.status == "ok", error_msg)
+            alua.quit()
 		end
 		
-		function start(dst)
-			local code = "alua.quit()"
-			-- local code = "assert(recv_flag, error_msg)"
-			alua.send(dst, code, sendcb)
+		function start(from)
+			local code = "assert(alua.id == %q, err_msg)"
+			alua.send(from, string.format(code, from), sendcb)
 		end
 	]]
 	
