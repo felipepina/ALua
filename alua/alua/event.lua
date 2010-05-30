@@ -3,7 +3,7 @@
 --
 -- Module to register and invoke the event handlers.
 --
--- version: 1.1 2010/05/15
+-- version: 1.1 2010/05/30
 -----------------------------------------------------------------------------
 
 module("alua.event", package.seeall)
@@ -25,6 +25,15 @@ local events = {}
 -----------------------------------------------------------------------------
 function register(name, handler)
     events[name] = handler
+end
+
+-----------------------------------------------------------------------------
+-- Unregisters a event handler
+--
+-- @param name The event name
+-----------------------------------------------------------------------------
+function unregister(name)
+    events[name] = nil
 end
 
 -----------------------------------------------------------------------------

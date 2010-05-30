@@ -3,7 +3,7 @@
 --
 -- Module to manage the tread pool and create new Lua process
 --
--- version: 1.1 2010/05/15
+-- version: 1.1 2010/05/30
 -----------------------------------------------------------------------------
 
 module ("alua.thread", package.seeall)
@@ -20,6 +20,9 @@ local uuid    = require("uuid")
 local count = 0
 local pending = {}
 local callbacks = {}
+
+-- Thread reply event name
+ALUA_THREAD_REPLY = "alua-thread-reply"
 
 -----------------------------------------------------------------------------
 -- Auxiliary functions
@@ -83,7 +86,7 @@ local function reply(msg)
 end
 
 -- Registers the handlers to the thread-reply event
-event.register("thread-reply", reply)
+event.register(ALUA_THREAD_REPLY, reply)
 
 -----------------------------------------------------------------------------
 -- End events handlers
@@ -109,14 +112,14 @@ function create(code, cb)
         pre = string.format([[
             do
                 local tb = {
-                    type = 'thread-reply',
+                    type = %q,
                     src = alua.id,
                     dst = %q,
                     cb = %d,
                 }
                 alua.mbox.send(tb.dst, tb)
             end
-            ]], alua.id, idx)
+            ]], ALUA_THREAD_REPLY, alua.id, idx)
     end
     -- TODO Verificar se retornar o retorno de ccr.spawn possui algum impacto
     -- return

@@ -1,7 +1,7 @@
 -----------------------------------------------------------------------------
 -- ALua
 --
--- version: 1.1 2010/05/15
+-- version: 1.1 2010/05/30
 -----------------------------------------------------------------------------
 
 module("alua", package.seeall)
@@ -54,29 +54,39 @@ local terminate = false
 local receive_handler
 
 -- Internal ALua events
-ALUA_AUTH               = "alua-auth"
-ALUA_AUTH_REPLY         = "alua-auth-reply"
-ALUA_FORK               = "alua-fork"
-ALUA_FORK_REPLY         = "alua-fork-reply"
-ALUA_CODE               = "alua-fork-code"
-ALUA_CODE_REPLY         = "alua-fork-code-reply"
-ALUA_EXECUTE            = "alua-execute"
-ALUA_EXECUTE_REPLY      = "alua-execute-reply"
-ALUA_RECEIVE_DATA       = "alua-receive-data"
-ALUA_RECEIVE_DATA_REPLY = "alua-receive-data-reply"
-ALUA_LINK_START         = "alua-link-start"
-ALUA_LINK_REPLY         = "alua-link-start-reply"
-ALUA_LINK_DAEMON        = "alua-link-daemon"
-ALUA_LINK_REPLY         = "alua-link-daemon-reply"
-ALUA_BONJOUR            = "alua-bonjour"
-ALUA_ROUTE              = "alua-route"
-ALUA_ROUTE_REPLY        = "alua-route-reply"
+local ALUA_AUTH                 = "alua-auth"
+local ALUA_AUTH_REPLY           = "alua-auth-reply"
+local ALUA_FORK                 = "alua-fork"
+local ALUA_FORK_REPLY           = "alua-fork-reply"
+local ALUA_FORK_CODE            = "alua-fork-code"
+local ALUA_FORK_CODE_REPLY      = "alua-fork-code-reply"
+local ALUA_EXECUTE              = "alua-execute"
+local ALUA_EXECUTE_REPLY        = "alua-execute-reply"
+local ALUA_RECEIVE_DATA         = "alua-receive-data"
+local ALUA_RECEIVE_DATA_REPLY   = "alua-receive-data-reply"
+local ALUA_LINK_START           = "alua-link-start"
+local ALUA_LINK_START_REPLY     = "alua-link-start-reply"
+local ALUA_LINK_DAEMON          = "alua-link-daemon"
+local ALUA_LINK_DAEMON_REPLY    = "alua-link-daemon-reply"
+local ALUA_BONJOUR              = "alua-bonjour"
+local ALUA_ROUTE                = "alua-route"
+local ALUA_ROUTE_REPLY          = "alua-route-reply"
+local ALUA_DISPATCHER           = "alua-dispatcher"
+local ALUA_DISPATCHER_REPLY     = "alua-dispatcher-reply"
+-- In Thread Module
+-- local ALUA_THREAD_REPLY       = "alua-thread-reply"
+
+-- Message status
+ALUA_STATUS_OK      = "ok"
+ALUA_STATUS_ERROR   = "error"
 
 -----------------------------------------------------------------------------
 -- Exported low-level functions
 -----------------------------------------------------------------------------
 inc_threads = thread.inc_threads
 dec_threads = thread.dec_threads
+reg_event   = event.register
+unreg_event = event.unregister
 tostring    = marshal.dump
 
 -----------------------------------------------------------------------------
@@ -98,12 +108,18 @@ local function dostring(str)
         succ, errmsg = pcall(f)
     end
     return succ, errmsg
-end
+end -- function dostring
 
+
+-----------------------------------------------------------------------------
+-- Generates the next sequencial to a process
+--
+-- @return the sequencial generated
+-----------------------------------------------------------------------------
 local function nextid()
     count = count + 1
     return count
-end -- function dostring
+end -- function nextid
 
 -----------------------------------------------------------------------------
 -- Sets the callback function within a context
@@ -137,7 +153,6 @@ local function getcb(idx)
     return cb, ctx
 end -- function getcb
 
--- TODO Completar documentação
 -----------------------------------------------------------------------------
 -- Listens and process messages received in a socket
 --
@@ -236,7 +251,10 @@ local function routemsg(dst, msg)
             return mbox.send(dst, msg)
         else
             -- Routes the message: send to router or daemon
-            msg = {type = "route", message = msg}
+            msg = {
+                type    = ALUA_ROUTE,
+                message = msg
+            }
             if alua.isdaemon then -- Send to router
                 local conn = nexthop(proc)
                 -- TODO Retitar linha abaixo
@@ -276,7 +294,7 @@ local function newprocess(dst, chunk, cb)
     if alua.id then
         -- Creates the "create a new ALua process" event
         local tb = {
-            type    = "fork",
+            type    = ALUA_FORK,
             src     = alua.id,
             dst     = dst,
             chunk   = chunk,
@@ -318,24 +336,24 @@ local function auth(msg)
     -- Registers the pair (process id, socket)
     raw.setfd(id, msg.sock:getfd());
     local tb = {
-        type = "auth-reply",
-        status = "ok",
-        id = id,
-        daemonid = alua.id,
-        cb = msg.cb,
+        type        = ALUA_AUTH_REPLY,
+        status      = ALUA_STATUS_OK,
+        id          = id,
+        daemonid    = alua.id,
+        cb          = msg.cb,
     }
     -- TODO Não pode ocorrer algum erro? Verificar
 
     -- Sends through a shared socket
     tcp.rawsend(id, tb)
     --tcp.send(msg.sock, tb)
-end
+end -- function auth
 
 -----------------------------------------------------------------------------
 -- "Connection request reply" event handler
 -- Message definition:
 --      type        = "auth-reply"
---      status      "ok" or "error"
+--      status      ALUA_STATUS_OK or ALUA_STATUS_ERROR
 --      id          the created id of the process
 --      daemonid    the daemon id
 --      cb          the requester's callback function id
@@ -355,10 +373,10 @@ local function auth_reply(msg)
     if msg.cb then
         local cb = getcb(msg.cb)
         if cb then
-            cb({status="ok", id=msg.id, daemonid=msg.daemonid})
+            cb({status=ALUA_STATUS_OK, id=msg.id, daemonid=msg.daemonid})
         end
     end
-end
+end -- function auth_reply
 
 -----------------------------------------------------------------------------
 -- Execute event handler
@@ -373,27 +391,27 @@ local function execute(msg)
     local succ, e = dostring(msg.chunk)
     if msg.cb then
         local tb = {
-            type = 'execute-reply',
-            src = alua.id,
-            dst = msg.src,
-            cb = msg.cb,
+            type        = ALUA_EXECUTE_REPLY,
+            src         = alua.id,
+            dst         = msg.src,
+            cb          = msg.cb,
         }
         if succ then
-            tb.status = "ok"
+            tb.status   = ALUA_STATUS_OK
         else
-            tb.error = e
-            tb.status = "error"
+            tb.error    = e
+            tb.status   = ALUA_STATUS_ERROR
         end
         routemsg(tb.dst, tb)
     end
-end
+end -- function execute
 
 -----------------------------------------------------------------------------
 -- Execute reply event handler
 -- Message definition:
 --      type    = 'execute-reply'
---      status  "ok" or "error"
---      error   error message if status = "error"
+--      status  ALUA_STATUS_OK or ALUA_STATUS_ERROR
+--      error   error message if status = ALUA_STATUS_ERROR
 --      src     the destinatio id
 --      dst     the sender id
 --      cb      the sender callback
@@ -401,11 +419,11 @@ end
 local function execute_reply(msg)
     local cb = getcb(msg.cb)
     if msg.error then
-        cb({src=msg.src, status="error", error=msg.error})
+        cb({src=msg.src, status=ALUA_STATUS_ERROR, error=msg.error})
     else
-        cb({src=msg.src, status="ok"})
+        cb({src=msg.src, status=ALUA_STATUS_OK})
     end
-end
+end -- function execute_reply
 
 -----------------------------------------------------------------------------
 -- "Receive data" event handler
@@ -429,30 +447,30 @@ local function receive_data(msg)
 
     if msg.cb then
         local tb = {
-            type = 'receive-data-reply',
-            src = alua.id,
-            dst = msg.src,
-            cb = msg.cb,
+            type        = ALUA_RECEIVE_DATA_REPLY,
+            src         = alua.id,
+            dst         = msg.src,
+            cb          = msg.cb,
         }
 
         -- If not return a error to the sender
         if succ then
-            tb.status = "ok"
+            tb.status   = ALUA_STATUS_OK
         else
-            tb.error = "no handle registered in the destination"
-            tb.status = "error"
+            tb.error    = "no handle registered in the destination"
+            tb.status   = ALUA_STATUS_ERROR
         end
 
         routemsg(tb.dst, tb)
     end
-end
+end -- function receive_data
 
 -----------------------------------------------------------------------------
 -- "Receive data reply" event handler
 -- Message definition:
 --      type    = 'receive-data-reply'
---      status  "ok" or "error"
---      error   error message if status = "error"
+--      status  ALUA_STATUS_OK or ALUA_STATUS_ERROR
+--      error   error message if status = ALUA_STATUS_ERROR
 --      src     the destinatio id
 --      dst     the sender id
 --      cb      the sender callback
@@ -460,11 +478,11 @@ end
 local function receive_data_reply(msg)
     local cb = getcb(msg.cb)
     if msg.error then
-        cb({src=msg.src, status="error", error=msg.error})
+        cb({src=msg.src, status=ALUA_STATUS_ERROR, error=msg.error})
     else
-        cb({src=msg.src, status="ok"})
+        cb({src=msg.src, status=ALUA_STATUS_OK})
     end
-end
+end -- function receive_data_reply
 
 -----------------------------------------------------------------------------
 -- "Create a new ALua process" event handler
@@ -484,11 +502,11 @@ local function fork(msg)
     -- The new process will call this callback
     local function callback(m)
         local tb = {
-            type    = "fork-code-reply",
+            type    = ALUA_FORK_CODE_REPLY,
             src     = alua.id,
             dst     = m.src,    -- new process
             chunk   = chunk,
-            status  = "ok",
+            status  = ALUA_STATUS_OK,
             srcfrk  = srcfrk,   -- original process
             cbfrk   = cbfrk,    -- original process callback
         }
@@ -503,13 +521,13 @@ local function fork(msg)
     -- Creates a new process and starts the lauch function
     core.execute("lua", "-l", "alua", "-e", 
                 format("alua.launch(%q, %s, %d)", dip, dport, daemoncb))
-end
+end -- function fork
 
 -----------------------------------------------------------------------------
 -- "Create a new ALua process reply" event handler
 -- Message definition:
 --      type    = "fork-reply"
---      status  "ok" or "error"
+--      status  ALUA_STATUS_OK or ALUA_STATUS_ERROR
 --      src     the new process id
 --      dst     the requester id
 --      cb      requester callback
@@ -517,7 +535,7 @@ end
 local function fork_reply(msg)
     local cb = getcb(msg.cb)
     cb({status=msg.status, id=msg.src})
-end
+end -- function fork_reply
 
 -----------------------------------------------------------------------------
 -- "Fork code" event handler
@@ -530,13 +548,13 @@ end
 local function fork_code(msg)
     local cb = getcb(msg.cb)
     cb(msg)
-end
+end -- function fork_code
 
 -----------------------------------------------------------------------------
 -- "Fork code reply" event handler
 -- Message definition:
 --      type    = "fork-code-reply"
---      status  "ok" or "error"
+--      status  ALUA_STATUS_OK or ALUA_STATUS_ERROR
 --      src     the daemon id
 --      dst     new process id
 --      chunk   the initial new process code 
@@ -545,18 +563,19 @@ end
 -----------------------------------------------------------------------------
 local function fork_code_reply(msg)
     -- TODO Antes de enviar a resposta verificar se o codigo inicial executou com sucesso
+    -- ISSUE #2
     if msg.cbfrk then
         local tb = {
-            type = "fork-reply",
-            src = alua.id,
-            dst = msg.srcfrk,
-            status = "ok",
-            cb = msg.cbfrk,
+            type    = ALUA_FORK_REPLY,
+            src     = alua.id,
+            dst     = msg.srcfrk,
+            status  = ALUA_STATUS_OK,
+            cb      = msg.cbfrk,
         }
         routemsg(tb.dst, tb)
     end
     execute(msg)
-end
+end -- function fork_code_reply
 
 -----------------------------------------------------------------------------
 -- "Link daemons start" event handler
@@ -575,12 +594,12 @@ local function link_start(msg)
             local sock, err = tcp.connect(ip, tonumber(port), listen)
              if err then -- If couldn't connect
                 local tb = {
-                    type = "link-start-reply",
-                    status = "error",
-                    error = format("%q could not connect to daemon %q", alua.id, d),
-                    src = alua.id,
-                    dst = msg.src,
-                    cb = msg.cb,
+                    type    = ALUA_LINK_START_REPLY,
+                    status  = ALUA_STATUS_ERROR,
+                    error   = format("%q could not connect to daemon %q", alua.id, d),
+                    src     = alua.id,
+                    dst     = msg.src,
+                    cb      = msg.cb,
                 }
                 routemsg(tb.dst, tb)
                 return
@@ -589,10 +608,10 @@ local function link_start(msg)
                 daemons[d] = sock
                 daemons[sock] = d
                 local tb = {
-                    type = "bonjour",
-                    mode = "daemon",
-                    src = alua.id,
-                    dst = d
+                    type    = ALUA_BONJOUR,
+                    mode    = "daemon",
+                    src     = alua.id,
+                    dst     = d
                 }
                 -- Send a bounjour event to the new deamon
                 -- The bonjour event creates a link between the tow daemons
@@ -609,7 +628,7 @@ local function link_start(msg)
         
         callback = function (m)
             if resp then
-                resp = (m.status == "ok")
+                resp = (m.status == ALUA_STATUS_OK)
                 if not resp then
                     err =  m.error
                 end
@@ -618,17 +637,17 @@ local function link_start(msg)
             -- count = count - 1
             -- if count == 0 then
                 local tb = {
-                    type = "link-start-reply",
-                    src = alua.id,
-                    dst = dst,
-                    cb = c,
+                    type        = ALUA_LINK_START_REPLY,
+                    src         = alua.id,
+                    dst         = dst,
+                    cb          = c,
                 }
                 if resp then
-                    tb.status = "ok"
-                    tb.daemons = l
+                    tb.status   = ALUA_STATUS_OK
+                    tb.daemons  = l
                 else
-                    tb.status = "error"
-                    tb.error = err
+                    tb.status   = ALUA_STATUS_ERROR
+                    tb.error    = err
                 end
             routemsg(tb.dst, tb)
             -- end
@@ -646,7 +665,7 @@ local function link_start(msg)
     
     -- Sends to the next daemon a link-daemon event
     local tb = {
-        type    = "link-daemon",
+        type    = ALUA_LINK_DAEMON,
         list    = msg.list,             -- original daemons list
         done    = {[alua.id] = true},   -- indicates the current daemon is in the network
         src     = alua.id,
@@ -663,8 +682,8 @@ end -- function link-start
 -- "Link daemons start reply" event handler
 -- Message definition:
 --      type    = "link-start-reply"
---      status  "ok" or "error"
---      error   error message if status = "error"
+--      status  ALUA_STATUS_OK or ALUA_STATUS_ERROR
+--      error   error message if status = ALUA_STATUS_ERROR
 --      src     the first daemon id
 --      dst     the requester id
 --      cb      the requester callback
@@ -673,7 +692,7 @@ end -- function link-start
 local function link_reply(msg)
     local cb = getcb(msg.cb)
     cb({status=msg.status, error=msg.error, daemons=msg.daemons})
-end
+end -- function link_reply
 
 -----------------------------------------------------------------------------
 -- "Link daemons" event handler
@@ -695,12 +714,12 @@ local function link_daemon(msg)
             if err then -- If couldn't connect
                 if msg.cb then
                     local tb = {
-                        type="link-daemon-reply",
-                        status = "error",
-                        error = format("%q could not connect to daemon %q", alua.id, d),
-                        src = alua.id,
-                        dst = msg.src,
-                        cb = msg.cb,
+                        type    = ALUA_LINK_DAEMON_REPLY,
+                        status  = ALUA_STATUS_ERROR,
+                        error   = format("%q could not connect to daemon %q", alua.id, d),
+                        src     = alua.id,
+                        dst     = msg.src,
+                        cb      = msg.cb,
                     }
                     routemsg(tb.dst, tb)
                 end
@@ -710,10 +729,10 @@ local function link_daemon(msg)
                 daemons[d] = sock
                 daemons[sock] = d
                 local tb = {
-                    type = "bonjour",
-                    mode = "daemon",
-                    src = alua.id,
-                    dst = d,
+                    type    = ALUA_BONJOUR,
+                    mode    = "daemon",
+                    src     = alua.id,
+                    dst     = d,
                 }
                 -- Send a bonjour event to the deamon
                 tcp.send(sock, tb)
@@ -732,11 +751,11 @@ local function link_daemon(msg)
         -- If it's done and the requester has a callback send the reply to the previous daemon
         if msg.cb then
             local tb = {
-                type = "link-daemon-reply",
-                status = "ok",
-                src = alua.id,
-                dst = msg.src,
-                cb = msg.cb,
+                type    = ALUA_LINK_DAEMON_REPLY,
+                status  = ALUA_STATUS_OK,
+                src     = alua.id,
+                dst     = msg.src,
+                cb      = msg.cb,
             }
             routemsg(tb.dst, tb)
         end
@@ -750,12 +769,12 @@ local function link_daemon(msg)
 
         callback = function (m)
             local tb = {
-                    type = "link-daemon-reply",
-                    status = m.status,
-                    error = m.error,
-                    src = alua.id,
-                    dst = dst,
-                    cb = c,
+                    type    = ALUA_LINK_DAEMON_REPLY,
+                    status  = m.status,
+                    error   = m.error,
+                    src     = alua.id,
+                    dst     = dst,
+                    cb      = c,
                 }
             routemsg(tb.dst, tb)
         end -- function callback
@@ -770,17 +789,17 @@ local function link_daemon(msg)
         end
     end
     local tb = {
-        type = "link-daemon",
-        list = msg.list,
-        done = msg.done,
-        src = alua.id,
-        dst = next,
+        type    = ALUA_LINK_DAEMON,
+        list    = msg.list,
+        done    = msg.done,
+        src     = alua.id,
+        dst     = next,
     }
     if callback then
         tb.cb = setcb(callback)
     end
     routemsg(tb.dst, tb)
-end
+end -- function link_daemon
 
 -----------------------------------------------------------------------------
 -- "Link daemons" event handler
@@ -797,7 +816,7 @@ local function bonjour(msg)
     
     -- Register the pair (daemon id, socket)
     raw.setfd(msg.src, msg.sock:getfd())
-end
+end -- function bonjour
 
 -----------------------------------------------------------------------------
 -- Route message event handler
@@ -817,27 +836,24 @@ local function route(tmp)
         -- If the message has a status, it is a reply: discart it.
         if e and msg.cb and not msg.status then
             local tb = {
-                -- TODO Corrigir o envio do retorno quando nao ha rota para o destino
-                -- o tipo da mensagem deve ser outro dai cria-se um novo tratador
-                -- type = msg.type .. "-reply",
-                type = "route-reply",
-                src = alua.id,
-                dst = msg.src,
-                status = "error",
-                error = e,
-                cb = msg.cb,
+                type    = ALUA_ROUTE_REPLY,
+                src     = alua.id,
+                dst     = msg.src,
+                status  = ALUA_STATUS_ERROR,
+                error   = e,
+                cb      = msg.cb,
             }
             routemsg(msg.src, tb)
         end
     end
-end
+end -- function route
 
 -----------------------------------------------------------------------------
 -- Route message reply event handler
 -- Will be dispatched when no route could be found
 -- Message definition:
 --      type    = "route-reply"
---      status  "error"
+--      status  ALUA_STATUS_ERROR
 --      error   the error message
 --      scr     the last hop reached
 --      dst     the sender's id
@@ -847,7 +863,69 @@ local function route_reply(msg)
     local cb = getcb(msg.cb)
     -- Use the most general fields in the message
     cb({status=msg.status, error=msg.error})
-end
+end -- function route_reply
+
+-----------------------------------------------------------------------------
+-- Dispatch event handler
+-- Message definition:
+--      type    alua.ALUA_DISPATCHER
+--      usrtype event's user type
+--      scr     the sender's id
+--      dst     the destination
+--      data    the data
+--      cb      the sender's callback
+-----------------------------------------------------------------------------
+local function dispatcher(msg)
+    -- Original sender and sender's callback function
+    local sender, sendercb = msg.src, msg.cb
+    
+    local function dispatchercb(status, error)
+        local reply = {
+            type    = ALUA_DISPATCHER_REPLY,
+            status  = status,
+            error   = error,
+            src     = alua.id,
+            dst     = sender,
+            cb      = sendercb
+        }
+        
+        routemsg(reply.dst, reply)
+    end -- function dispatchercb
+    
+    -- Build the user event message
+    local usermsg = {
+        type        = msg.usrtype,
+        src         = msg.src,
+        dst         = msg.dst,
+        data        = marshal.decode(msg.data)
+    }
+    if msg.cb then
+        usermsg.cb  = dispatchercb
+    end
+    
+    -- process the message
+    process(usermsg)
+end -- function dispatcher
+
+-----------------------------------------------------------------------------
+-- Dispatch reply event handler
+-- Message definition:
+--      type    ALUA_DISPATCHER_REPLY,
+--      status  ALUA_STATUS_OK or ALUA_STATUS_ERROR
+--      error   error message if status = ALUA_STATUS_ERROR
+--      scr     the dispatch destination's id
+--      dst     the dispatch event sender's id
+--      cb      the dispatch evetn sender's callback
+-----------------------------------------------------------------------------
+local function dispatcher_reply(msg)
+    local cb = getcb(msg.cb)
+    if msg.error then
+        cb({src=msg.src, status=ALUA_STATUS_ERROR, error=msg.error})
+    else
+        cb({src=msg.src, status=ALUA_STATUS_OK})
+    end
+end -- function dispatcher_reply
+
 
 -----------------------------------------------------------------------------
 -- End event handles
@@ -856,28 +934,34 @@ end
 -----------------------------------------------------------------------------
 -- Registered events
 -----------------------------------------------------------------------------
-event.register("auth",                  auth)
-event.register("auth-reply",            auth_reply)
+event.register(ALUA_AUTH,               auth)
+event.register(ALUA_AUTH_REPLY,         auth_reply)
 
-event.register("fork",                  fork)
-event.register("fork-reply",            fork_reply)
-event.register("fork-code",             fork_code)
-event.register("fork-code-reply",       fork_code_reply)
+event.register(ALUA_FORK,               fork)
+event.register(ALUA_FORK_REPLY,         fork_reply)
+event.register(ALUA_FORK_CODE,          fork_code)
+event.register(ALUA_FORK_CODE_REPLY,    fork_code_reply)
 
-event.register("execute",               execute)
-event.register("execute-reply",         execute_reply)
+event.register(ALUA_EXECUTE,            execute)
+event.register(ALUA_EXECUTE_REPLY,      execute_reply)
 
-event.register("receive-data",          receive_data)
-event.register("receive-data-reply",    receive_data_reply)
+event.register(ALUA_RECEIVE_DATA,       receive_data)
+event.register(ALUA_RECEIVE_DATA_REPLY, receive_data_reply)
 
-event.register("link-start",            link_start)
-event.register("link-start-reply",      link_reply)
-event.register("link-daemon",           link_daemon)
-event.register("link-daemon-reply",     link_reply)
-event.register("bonjour",               bonjour)
+event.register(ALUA_LINK_START,         link_start)
+event.register(ALUA_LINK_START_REPLY,   link_reply)
+event.register(ALUA_LINK_DAEMON,        link_daemon)
+event.register(ALUA_LINK_DAEMON_REPLY,  link_reply)
+event.register(ALUA_BONJOUR,            bonjour)
 
-event.register("route",                 route)
-event.register("route-reply",           route_reply)
+event.register(ALUA_ROUTE,              route)
+event.register(ALUA_ROUTE_REPLY,        route_reply)
+
+-- event.register(ALUA_THREAD_REPLY,       thread.reply)
+
+event.register(ALUA_DISPATCHER,         dispatcher)
+event.register(ALUA_DISPATCHER_REPLY,   dispatcher_reply)
+
 -----------------------------------------------------------------------------
 -- End registered events
 -----------------------------------------------------------------------------
@@ -908,7 +992,7 @@ function connect(ip, port, cb)
         return false, err
     end
     connecting = true
-    local tb = {type="auth"}
+    local tb = {type = ALUA_AUTH}
     if cb then
         tb.cb = setcb(cb)
     end
@@ -916,7 +1000,7 @@ function connect(ip, port, cb)
 
     -- TODO Alterar para retornar erro ou sucesso pela callback
     return true
-end
+end -- function connect
 
 -----------------------------------------------------------------------------
 -- Create a new daemon
@@ -933,7 +1017,7 @@ function create(ip, port)
     alua.isdaemon = true
     alua.isrouter = true
     mbox.register(alua.id)
-end
+end -- function create
 
 -----------------------------------------------------------------------------
 -- Send a message to execute in the destination
@@ -948,18 +1032,18 @@ end
 function send(dst, str, cb)
     if alua.id then
         local msg = {
-            type = "execute",
-            src = alua.id,
-            dst = dst,
-            chunk = str
+            type    = ALUA_EXECUTE,
+            src     = alua.id,
+            dst     = dst,
+            chunk   = str
         }
         if cb then
-            msg.cb = setcb(cb)
+            msg.cb  = setcb(cb)
         end
         return routemsg(dst, msg)
     end
     return false, "not connected"
-end
+end -- function send
 
 -----------------------------------------------------------------------------
 -- Send data to the destination
@@ -974,19 +1058,19 @@ end
 function send_data(dst, data, cb)
     if alua.id then
         local msg = {
-            type = "receive-data",
-            src = alua.id,
-            dst = dst,
-            data = marshal.encode(data)
+            type    = ALUA_RECEIVE_DATA,
+            src     = alua.id,
+            dst     = dst,
+            data    = marshal.encode(data)
         }
         if cb then
-            msg.cb = setcb(cb)
+            msg.cb  = setcb(cb)
         end
 
         return routemsg(dst, msg)
     end
     return false, "not connected"
-end
+end -- function send_data
 
 -----------------------------------------------------------------------------
 -- Register a receive data event handler
@@ -995,7 +1079,7 @@ end
 -----------------------------------------------------------------------------
 function register_listener(handler)
     receive_handler = handler
-end
+end -- function register_listener
 
 -----------------------------------------------------------------------------
 -- Create a network of deamons
@@ -1009,18 +1093,18 @@ end
 function link(list, cb)
     if alua.id then
         local tb = {
-            type = "link-start",
-            list = list,
-            src = alua.id,
-            dst = alua.daemonid,
+            type    = ALUA_LINK_START,
+            list    = list,
+            src     = alua.id,
+            dst     = alua.daemonid,
         }
         if cb then
-            tb.cb = setcb(cb)
+            tb.cb   = setcb(cb)
         end
         return routemsg(tb.dst, tb)
     end
     return false, "not connected"
-end
+end -- function link
 
 -----------------------------------------------------------------------------
 -- Lauch a process and conect it to a daemon
@@ -1033,12 +1117,12 @@ end
 function launch(ip, port, cb)
     -- begin function
     local function conncb(r)
-        if r.status == "ok" then
+        if r.status == ALUA_STATUS_OK then
             local tb = {
-                type = "fork-code",
-                src = alua.id,
-                dst = alua.daemonid,
-                cb = cb,
+                type    = ALUA_FORK_CODE,
+                src     = alua.id,
+                dst     = alua.daemonid,
+                cb      = cb,
             }
             routemsg(tb.dst, tb)
         else
@@ -1056,10 +1140,11 @@ function launch(ip, port, cb)
     connecting = true
 
     return loop()
-end
+end -- function launch
 
 -----------------------------------------------------------------------------
--- ??
+-- Function to cicle one time through the event loop. Used to integrate the
+-- event loop of this process with a bigger event loop
 -----------------------------------------------------------------------------
 function step()
     local nonblock = task.process()
@@ -1068,7 +1153,7 @@ function step()
         nonblock = nonblock or tcp.process()
     end
     return nonblock
-end
+end -- function step
 
 -----------------------------------------------------------------------------
 -- The process event loop
@@ -1086,7 +1171,7 @@ function loop()
             mbox.process(not task.hasdata)
         end
     end
-end
+end -- function loop
 
 -----------------------------------------------------------------------------
 -- Create a new Lua process
@@ -1103,7 +1188,7 @@ function spawn(code, luap, cb)
     else
         newprocess(alua.daemonid, code, cb)
     end
-end
+end -- function spawn
 
 -----------------------------------------------------------------------------
 -- Inicialize the process.
@@ -1128,32 +1213,65 @@ function init(tb)
             task.schedule(tb.cb)
         end
     end
-end
+end -- function init
 
 -----------------------------------------------------------------------------
 -- Terminate the event loop and quit the process
 -----------------------------------------------------------------------------
 function quit()
     terminate = true
-end
+end -- function quit
 
 -----------------------------------------------------------------------------
 -- Get the daemons list
 --
 -- @return the daemons list
 -----------------------------------------------------------------------------
-function get_daemon_it()
-    return pairs(daemons)
-end
+function getdaemons()
+    local daemonlist = {}
+    
+    if alua.id == alua.daemonid then
+        for k, v in pairs(daemons) do
+            if type(k) == "string" then
+                table.insert(daemonlist, k)
+            end
+        end
+        -- return pairs(daemons)
+        return daemonlist
+    else
+        return nil, "not allowed"
+    end
+end -- function getdaemons
 
--- function inc_threads(qtd)
---    return thread.inc_threads(qtd)
--- end
--- 
--- 
--- function dec_threads(qtd)
---    return thread.dec_threads(qtd) 
--- end
+
+-----------------------------------------------------------------------------
+-- Sends a event to a process
+--
+-- @param dst the process id
+-- @param event_type the event's type
+-- @param data the data to be send
+-- @param cb the callback function
+--
+-- @return true if the message was sent
+--         false and the error message if there's a error
+-----------------------------------------------------------------------------
+function send_event(dst, event_type, data, cb)
+    if alua.id then
+        local msg = {
+            type    = ALUA_DISPATCHER,
+            usrtype = event_type,
+            src     = alua.id,
+            dst     = dst,
+            data    = marshal.encode(data)
+        }
+        if cb then
+            msg.cb  = setcb(cb)
+        end
+        
+        return routemsg(dst, msg)
+    end
+    return false, "not connected"        
+end -- function send_event
 
 -----------------------------------------------------------------------------
 -- End API functions
