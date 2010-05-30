@@ -1,7 +1,8 @@
 -----------------------------------------------------------------------------
 -- Script to create a process and connect it to a daemon in the specified
 -- ip and port and load a chunck from a file
---      usage: lua p.lua <ip> <port> <filename>
+--      usage: lua p.lua <ip> <port> <filename> <daemonlist>
+--      <daemonlist> uses space as separator. Ex: 1.1.1.1:8080/0 1.1.1.1:8081/0 
 -----------------------------------------------------------------------------
 
 require("alua")
@@ -27,5 +28,6 @@ if ip and port then
     end
     alua.loop()
 else
-    print("usage: lua p.lua <ip> <port> <filename>")
+    print("usage: lua p.lua <ip> <port> <filename> <daemonlist>")
+    print("<daemonlist> uses space as separator. Ex: 1.1.1.1:8080/0 1.1.1.1:8081/0")
 end
