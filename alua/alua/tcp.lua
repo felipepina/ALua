@@ -11,8 +11,6 @@ module("alua.tcp", package.seeall)
 local raw     = require("rawsend")
 local socket  = require("socket")
 local marshal = require("alua.marshal")
--- local ccr     = require("ccr")
--- local event   = require("alua.event")
 
 -----------------------------------------------------------------------------
 -- Aliases
@@ -25,24 +23,31 @@ local concat    = table.concat
 -----------------------------------------------------------------------------
 -- Module variables
 -----------------------------------------------------------------------------
--- Sockets list
+-- Socket's list (server and client) with the corresponding handlers
+-- A server socket will have a handler to accept a connection
+-- A client socket will have a handler to send and receive data
 local socks = {}
 
--- Incoming sockets list
+-- List of handlers associated with server sockets. When a new connection
+-- is established the client socket will be put on the socks list associated
+-- with the handler of this list.
 local servers = {}
 
 -----------------------------------------------------------------------------
 -- Auxiliary functions
 -----------------------------------------------------------------------------
 
--- TODO Documentar
 -----------------------------------------------------------------------------
--- 
+-- Accept a incoming connection in the server socket
+--
+-- @param srv the server socket
 -----------------------------------------------------------------------------
 local function accept(srv)
     local s, err = srv:accept()
     if err then return end
     s:setoption("tcp-nodelay", true)
+    -- Put the client socket s in the socket list and associate with a
+    -- handler in the server list
     socks[s] = servers[srv]
 end
 
@@ -90,11 +95,14 @@ end
 -- @return True
 -----------------------------------------------------------------------------
 function rawsend(name, msg)
-    --msg = dump(msg) .. string.rep(" ", 4096)
     msg = dump(msg)
-    raw.send(name, tostring(#msg) .. "\n" .. msg)
-    -- TODO Verificar esse retorno sempre true
-    return true
+    err = raw.send(name, tostring(#msg) .. "\n" .. msg)
+
+    if err == 0 then
+        return true
+    else
+        return false, ret
+    end
 end
 
 -----------------------------------------------------------------------------
@@ -137,13 +145,15 @@ function closeall()
 end
 
 -----------------------------------------------------------------------------
--- Creates a incoming socket and registers a handler to it
+-- Creates a server socket and registers a handler. When a connection is
+-- established with the serverthe client socket will be associated to that
+-- handler. Typically the handler will be send and receive data.
 --
 -- @param ip The ip
 -- @param port The port
 -- @param handler The handler
 --
--- @return The socket created
+-- @return The server socket created
 -----------------------------------------------------------------------------
 function listen(ip, port, handler)
     local srv, err = socket.bind(ip, port)
@@ -156,13 +166,13 @@ function listen(ip, port, handler)
 end
 
 -----------------------------------------------------------------------------
--- Connect to a remote socket and register a hendler to it
+-- Connect to a server socket and register a handler to it
 --
 -- @param ip The ip
 -- @param port The port
 -- @param handler The handler
 --
--- @return The socket
+-- @return The client socket
 -----------------------------------------------------------------------------
 function connect(ip, port, handler)
     local s, err = socket.connect(ip, port)

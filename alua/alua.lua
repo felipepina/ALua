@@ -36,8 +36,7 @@ local count = 0
 
 -- Daemons list
 local daemons = {}
--- TODO separar a list de daemons em duas
--- uma referenciando sockets e outra referenciando daemonid
+-- TODO Separar a list de daemons em duas uma referenciando sockets e outra referenciando daemonid
 
 -- Process list (only on main Lua process)
 local processes = {}
@@ -257,23 +256,14 @@ local function routemsg(dst, msg)
             }
             if alua.isdaemon then -- Send to router
                 local conn = nexthop(proc)
-                -- TODO Retitar linha abaixo
-                --local conn = nexthopid(proc)
                 if not conn then
                     return false, "unknown destination"
                 else
                     return tcp.send(conn, msg)
-                    --return tcp.rawsend(conn, msg)
                 end
             else -- Send to daemon
                 return tcp.rawsend(alua.daemonid, msg)
             end
-        -- TODO Retirar linhas abaixo
-        --elseif alua.isrouter then
-        --    return tcp.send(sock, msg)
-        --else
-        --    return mbox.send(alua.router, msg)
-        --end
         end
     end
 end -- function routemsg
@@ -330,11 +320,12 @@ local function auth(msg)
     local id = prefix .. "/" .. tostring(nextid())
     
     -- Puts the process in the processes list
-    processes[id] = msg.sock
+    processes[id]       = msg.sock
     processes[msg.sock] = id
 
     -- Registers the pair (process id, socket)
     raw.setfd(id, msg.sock:getfd());
+    -- TODO A resposta é sempre OK mesmo? Não pode ocorrer algum erro?
     local tb = {
         type        = ALUA_AUTH_REPLY,
         status      = ALUA_STATUS_OK,
@@ -342,11 +333,9 @@ local function auth(msg)
         daemonid    = alua.id,
         cb          = msg.cb,
     }
-    -- TODO Não pode ocorrer algum erro? Verificar
 
     -- Sends through a shared socket
     tcp.rawsend(id, tb)
-    --tcp.send(msg.sock, tb)
 end -- function auth
 
 -----------------------------------------------------------------------------
@@ -562,8 +551,7 @@ end -- function fork_code
 --      cbfrk   the requester callback
 -----------------------------------------------------------------------------
 local function fork_code_reply(msg)
-    -- TODO Antes de enviar a resposta verificar se o codigo inicial executou com sucesso
-    -- ISSUE #2
+    -- TODO Antes de enviar a resposta verificar se o código inicial executou com sucesso. Provavelmente a chamada de execute no final terá que ser modifica. Talvez chamar o dostring daqui mesmo. (ISSUE #2)
     if msg.cbfrk then
         local tb = {
             type    = ALUA_FORK_REPLY,
@@ -633,24 +621,20 @@ local function link_start(msg)
                     err =  m.error
                 end
             end
-            -- TODO Nao precisa verificar se o contador está em zero pois essa callback é chamada apenas uma vez
-            -- count = count - 1
-            -- if count == 0 then
-                local tb = {
-                    type        = ALUA_LINK_START_REPLY,
-                    src         = alua.id,
-                    dst         = dst,
-                    cb          = c,
-                }
-                if resp then
-                    tb.status   = ALUA_STATUS_OK
-                    tb.daemons  = l
-                else
-                    tb.status   = ALUA_STATUS_ERROR
-                    tb.error    = err
-                end
+            local tb = {
+                type        = ALUA_LINK_START_REPLY,
+                src         = alua.id,
+                dst         = dst,
+                cb          = c,
+            }
+            if resp then
+                tb.status   = ALUA_STATUS_OK
+                tb.daemons  = l
+            else
+                tb.status   = ALUA_STATUS_ERROR
+                tb.error    = err
+            end
             routemsg(tb.dst, tb)
-            -- end
         end -- function callback
     end
 
@@ -998,7 +982,6 @@ function connect(ip, port, cb)
     end
     tcp.send(sock, tb)
 
-    -- TODO Alterar para retornar erro ou sucesso pela callback
     return true
 end -- function connect
 
@@ -1180,13 +1163,15 @@ end -- function loop
 -- @param luap true if the new process is a Lua process
 --             fasle if the new process is a ALua process
 -- @param cb the callback function
+--
+-- @return true if the request was sent
+--         false and the error message if there's a error
 -----------------------------------------------------------------------------
 function spawn(code, luap, cb)
     if luap then
-        -- TODO Retornar via evento?
-        newthread(code, cb)
+        return newthread(code, cb)
     else
-        newprocess(alua.daemonid, code, cb)
+        return newprocess(alua.daemonid, code, cb)
     end
 end -- function spawn
 

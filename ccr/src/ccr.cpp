@@ -27,7 +27,7 @@ using namespace tbb;
 
 #define THR_SIZE 3
 
-static void* worker(void *arg);
+// static void* worker(void *arg);
 
 // Thread pool
 static list<pthread_t> thr_pool;
@@ -174,6 +174,8 @@ static int ccr_yield(lua_State *L)
 {
     lua_getfield(L, LUA_REGISTRYINDEX, CCR_SELF);
     process_t *proc = (process_t*)lua_touserdata(L, -1);
+    
+    // Checks if is the main process
     if (!proc->main)
     {
         // Worker will release the lock
@@ -247,9 +249,6 @@ static int ccr_spawn(lua_State *L)
                     lua_pushboolean(L, 1);
                     return 1;
                 }
-                /*
-                    TODO Retornar isto ao processo chamador
-                */
                 cerr << "[ERROR][CREATING LUA PROCESS] " << lua_tostring(proc->L, -1) << endl;
                 lua_close(proc->L);
             }

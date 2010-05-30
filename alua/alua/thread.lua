@@ -12,12 +12,10 @@ local ccr     = require("ccr")
 local alua    = require("alua")
 local event   = require("alua.event")
 local uuid    = require("uuid")
--- local mbox    = require("alua.mbox")
 
 -----------------------------------------------------------------------------
 -- Modules variables
 -----------------------------------------------------------------------------
-local count = 0
 local pending = {}
 local callbacks = {}
 
@@ -27,13 +25,6 @@ ALUA_THREAD_REPLY = "alua-thread-reply"
 -----------------------------------------------------------------------------
 -- Auxiliary functions
 -----------------------------------------------------------------------------
-
---[[
-local function nextid()
-   count = count + 1
-   return count
-end
---]]
 
 -----------------------------------------------------------------------------
 -- Creates a unique id
@@ -52,9 +43,9 @@ end
 -- @return the callback id
 -----------------------------------------------------------------------------
 local function setcb(cb)
-    local idx = #pending+1
-    pending[idx] = true
-    callbacks[idx] = cb
+    local idx = #pending + 1
+    pending[idx]    = true
+    callbacks[idx]  = cb
     return idx
 end
 
@@ -67,8 +58,8 @@ end
 -----------------------------------------------------------------------------
 local function getcb(idx)
     local cb = callbacks[idx]
-    pending[idx] = nil
-    callbacks[idx] = nil
+    pending[idx]    = nil
+    callbacks[idx]  = nil
     return cb
 end
 
@@ -82,7 +73,11 @@ end
 -----------------------------------------------------------------------------
 local function reply(msg)
     local cb = getcb(msg.cb)
-    cb({status="ok", id=msg.src})
+    local reply = {
+        status  = alua.ALUA_STATUS_OK,
+        id      = msg.src
+    }
+    cb(reply)
 end
 
 -- Registers the handlers to the thread-reply event
@@ -100,7 +95,7 @@ event.register(ALUA_THREAD_REPLY, reply)
 -----------------------------------------------------------------------------
 -- Creates a new Lua process
 --
--- @param code the process initial code 
+-- @param code the process initial code
 -- @param cb the process callback
 --
 -- @return true if the process was created and false otherwise
@@ -108,22 +103,22 @@ event.register(ALUA_THREAD_REPLY, reply)
 function create(code, cb)
     local pre = ""
     if cb then
+        -- Send a reply from the new process to the sender
         local idx = setcb(cb)
         pre = string.format([[
             do
                 local tb = {
-                    type = %q,
-                    src = alua.id,
-                    dst = %q,
-                    cb = %d,
+                    type    = %q,
+                    src     = alua.id,
+                    dst     = %q,
+                    cb      = %d,
                 }
                 alua.mbox.send(tb.dst, tb)
             end
             ]], ALUA_THREAD_REPLY, alua.id, idx)
     end
-    -- TODO Verificar se retornar o retorno de ccr.spawn possui algum impacto
-    -- return
-    ccr.spawn(string.format([[
+
+    return ccr.spawn(string.format([[
         require("alua")
         alua.id = "%s/%s"
         alua.daemonid = %q
@@ -147,7 +142,7 @@ end
 --         failure
 -----------------------------------------------------------------------------
 function inc_threads(qtd)
-   return ccr.inc_workers(qtd) 
+   return ccr.inc_workers(qtd)
 end
 
 -----------------------------------------------------------------------------
@@ -159,7 +154,7 @@ end
 --         failure
 -----------------------------------------------------------------------------
 function dec_threads(qtd)
-   return ccr.dec_workers(qtd) 
+   return ccr.dec_workers(qtd)
 end
 
 -----------------------------------------------------------------------------

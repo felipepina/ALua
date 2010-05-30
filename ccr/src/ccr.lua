@@ -15,35 +15,41 @@ local os = os
 
 module("ccr")
 
--- Export core functions
+-----------------------------------------------------------------------------
+-- Exported low-level functions
+-----------------------------------------------------------------------------
+-- Export functions in module ccr.core
 for k, v in pairs(core) do
     _M[k] = v
 end
 
--- Export low-level receive
--- TODO acho que pode tirar essa exportacao pois nao eh usada
--- recv = core.receive
-
--- Override
-
+-- Overides these functions with theirs returns
 self   = core.self()
 ismain = core.ismain()
 
+-----------------------------------------------------------------------------
+-- Exported function
+-----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------
+-- Receive data
+--
+-- @return the data received
+-----------------------------------------------------------------------------
 function receive()
+    -- If the running process is the main process waits for data, don't yeild
+    -- because it's needed to route message to the others processes
+    -- If 
     if coroutine.running() or ismain then
         return core.receive()
     else
         while true do
-	        local str = core.tryreceive()
-	        if str then
-	            return str
-	        else
-	            -- TODO Comentado. Verificar se realmente pode-se retirar as duas linhas abaixos
-                -- print(debug.traceback())
-                -- os.exit()
-	            core.yield()
-	            --coroutine.yield()
-	        end
+            local str = core.tryreceive()
+            if str then
+                return str
+            else
+                core.yield()
+            end
         end
     end
 end

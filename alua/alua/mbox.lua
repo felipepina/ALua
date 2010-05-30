@@ -26,7 +26,6 @@ local receive       = ccr.receive
 local tryreceive    = ccr.tryreceive
 local hasdata       = ccr.hasdata
 local evtprocess    = event.process
---local receive = ccr.recv
 
 -----------------------------------------------------------------------------
 -- Module variables

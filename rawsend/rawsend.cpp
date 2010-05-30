@@ -39,6 +39,8 @@ static int sck_waitfd(int sock, int sw)
  * @param sock The socket id
  * @param data The data that will be send
  * @param count The data size
+ *
+ * @return 0 when sucessfully sent the data or the erro code (ERRORCODE > 0)
  */
 static int rawsend(int sock, const char *data, size_t count)
 {

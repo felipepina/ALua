@@ -27,10 +27,10 @@ local error = error
 
 -- Defines the types in the marshalling/unmarshaling
 local types = {
-    number = "N",
+    number  = "N",
     boolean = "B",
-    string = "S",
-    table = "T"
+    string  = "S",
+    table   = "T"
 }
 
 -- Sets the runtime environment
@@ -170,13 +170,13 @@ end
 -- Decodes data received
 --
 -- @param buf The buffer to decode
--- 
+--
 -- @return The decoded data
 -----------------------------------------------------------------------------
 function decode(buf)
     local ret = {}
     for data in string.gmatch(buf, "([^\n]+)\n") do
-        ret[#ret+1] = decode2(data)
+        ret[#ret + 1] = decode2(data)
     end
     return unpack(ret)
 end
@@ -192,7 +192,6 @@ end
 -- @return The encoded data
 -----------------------------------------------------------------------------
 function encode(obj)
-    -- TODO Colocar um loop para codificar varios objs
     local buf = {}
     encode2(obj, buf)
     return table.concat(buf)
