@@ -50,7 +50,7 @@ local contexts = {}
 local pending = {}
 
 local terminate = false
-local receive_handler
+local data_handler = nil
 
 -- Internal ALua events
 local ALUA_AUTH                 = "alua-auth"
@@ -1060,8 +1060,8 @@ end -- function send_data
 --
 -- @param handler the event handler
 -----------------------------------------------------------------------------
-function register_listener(handler)
-    receive_handler = handler
+function reg_data_handler(handler)
+    data_handler = handler
 end -- function register_listener
 
 -----------------------------------------------------------------------------
