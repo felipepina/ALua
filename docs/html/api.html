@@ -40,8 +40,13 @@
     <li><a href="#alua.link">alua.link</a></li>
     <li><a href="#alua.loop">alua.loop</a></li>
     <li><a href="#alua.quit">alua.quit</a></li>
+    <li><a href="#alua.reg_data_handler">alua.reg_data_handler</a></li>
+    <li><a href="#alua.reg_event">alua.reg_event</a></li>
     <li><a href="#alua.send">alua.send</a></li>
+    <li><a href="#alua.send_data">alua.send_data</a></li>
+    <li><a href="#alua.send_event">alua.send_event</a></li>
     <li><a href="#alua.spawn">alua.spawn</a></li>
+    <li><a href="#alua.unreg_event">alua.unreg_event</a></li>
     </ul>
 <li>Controle do pool de threads</li>
     <ul>
@@ -198,33 +203,33 @@ function sendcb(reply)
 
 		print(pool_size, error)
 		
-		if pool_size > 25 then
+		if pool_size &gt; 25 then
 			flip = false
 		end
 
-		if pool_size < 4 then
+		if pool_size &lt; 4 then
 			flip = true
 		end
 		
 	end
 
-	if reply.status == "ok" then
-		local code = "ping_message = alua.id .. ping_message"
+	if reply.status == &quot;ok&quot; then
+		local code = &quot;ping_message = alua.id .. ping_message&quot;
 		alua.send(reply.src, code, sendcb)
 	end	
 end
 
 function spawncb(reply)
-	if reply.status == "ok" then
-		local code = "ping_message = alua.id .. ping_message"
+	if reply.status == &quot;ok&quot; then
+		local code = &quot;ping_message = alua.id .. ping_message&quot;
 		alua.send(reply.id, code, sendcb)
 	end
 end
 
 function conncb(reply)
-  if reply.status == "ok" then
+  if reply.status == &quot;ok&quot; then
 	local code = [[
-		ping_message = ": Ping!"
+		ping_message = &quot;: Ping!&quot;
 	]]
     alua.spawn(code, true, spawncb)
     alua.spawn(code, true, spawncb)
@@ -232,7 +237,7 @@ function conncb(reply)
   end
 end
 
-alua.connect("192.168.0.1", 8888, conncb)
+alua.connect(&quot;192.168.0.1&quot;, 8888, conncb)
 alua.loop()
 </pre>
 
@@ -277,33 +282,33 @@ function sendcb(reply)
 
 		print(pool_size, error)
 		
-		if pool_size > 25 then
+		if pool_size &gt; 25 then
 			flip = false
 		end
 
-		if pool_size < 4 then
+		if pool_size &lt; 4 then
 			flip = true
 		end
 		
 	end
 
-	if reply.status == "ok" then
-		local code = "ping_message = alua.id .. ping_message"
+	if reply.status == &quot;ok&quot; then
+		local code = &quot;ping_message = alua.id .. ping_message&quot;
 		alua.send(reply.src, code, sendcb)
 	end	
 end
 
 function spawncb(reply)
-	if reply.status == "ok" then
-		local code = "ping_message = alua.id .. ping_message"
+	if reply.status == &quot;ok&quot; then
+		local code = &quot;ping_message = alua.id .. ping_message&quot;
 		alua.send(reply.id, code, sendcb)
 	end
 end
 
 function conncb(reply)
-  if reply.status == "ok" then
+  if reply.status == &quot;ok&quot; then
 	local code = [[
-		ping_message = ": Ping!"
+		ping_message = &quot;: Ping!&quot;
 	]]
     alua.spawn(code, true, spawncb)
     alua.spawn(code, true, spawncb)
@@ -311,7 +316,7 @@ function conncb(reply)
   end
 end
 
-alua.connect("192.168.0.1", 8888, conncb)
+alua.connect(&quot;192.168.0.1&quot;, 8888, conncb)
 alua.loop()
 </pre>
 
@@ -487,14 +492,36 @@ alua.loop()
 
 <p><a href ="#api">Voltar ao topo</a></p>
 
+<!-- REG_DATA_HANDLER -->
+<p>&nbsp;</p>
+
+<h4 class="subsection"><a name="alua.reg_data_handler" id="alua.reg_data_handler"></a>alua.reg_data_handler(handler)</h4>
+<h4>O que faz</h4>
+<p align="justify">Registra um tratador para recebimento de dados.</p>
+<h4>Descri&ccedil;&atilde;o</h4>
+<p align="justify">Fun&ccedil;&atilde;o para registrar o tratador, argumento <code class="inline">handler</code> do tipo function, de dados recebidos que foram enviados utilizando a fun&ccedil;&atilde;o <a href="#alua.send_data">alua.send_data</a>. 
+
+<p><a href ="#api">Voltar ao topo</a></p>
+
+<!-- REG_EVENT -->
+<p>&nbsp;</p>
+
+<h4 class="subsection"><a name="alua.reg_event" id="alua.reg_event"></a>alua.reg_event(event, handler)</h4>
+<h4>O que faz</h4>
+<p align="justify">Registra um tratador de evento definido pelo usu&aacute;rio.</p>
+<h4>Descri&ccedil;&atilde;o</h4>
+<p align="justify">Fun&ccedil;&atilde;o para registrar o tratador, argumento <code class="inline">handler</code> do tipo function, para evento definido pelo usuário, argumento <code class="inline">event</code>, que foi enviado utilizando a fun&ccedil;&atilde;o <a href="#alua.send_event">alua.send_event</a>. 
+
+<p><a href ="#api">Voltar ao topo</a></p>
+
 <!-- SEND -->
 <p>&nbsp;</p>
 
-<h4 class="subsection"><a name="alua.send" id="alua.send"></a>alua.send(destination, message[, callback])</h4>
+<h4 class="subsection"><a name="alua.send" id="alua.send"></a>alua.send(destination, string[, callback])</h4>
 <h4>O que faz</h4>
-<p align="justify">Envia uma mensagem a um processo.</p>
+<p align="justify">Envia uma string a um processo.</p>
 <h4>Descri&ccedil;&atilde;o</h4>
-<p align="justify">Fun&ccedil;&atilde;o para enviar uma mensagem, argumento <code class="inline">message</code> do tipo string, a um processo, argumento <code class="inline">destination</code> no mesmo formato de <a href="#alua.id">alua.id</a>, para ser executada no processo destino. O argumento <code class="inline">callback</code> &eacute; opcional e indicar&aacute; uma fun&ccedil;&atilde;o para ser chamada de forma ass&iacute;ncrona com o retorno.</p>
+<p align="justify">Fun&ccedil;&atilde;o para enviar uma string, argumento <code class="inline">string</code> do tipo string, a um processo, argumento <code class="inline">destination</code> no mesmo formato de <a href="#alua.id">alua.id</a>, para ser executada no processo destino. O argumento <code class="inline">callback</code> &eacute; opcional e indicar&aacute; uma fun&ccedil;&atilde;o para ser chamada de forma ass&iacute;ncrona com o retorno.</p>
 <h4>Valor de retorno</h4>
 <p align="justify">Retorna <code class="inline">true</code> se a mensagem foi enviada com sucesso. Caso o processo n&atilde;o esteja conectado &agrave; um deamon s&atilde;o retornados o valores <code class="inline">(false, &quot;not connected&quot;)</code>.</p>
 
@@ -553,6 +580,164 @@ function conncb(reply)
             function hello()
                 print(&quot;Hello!&quot;)
             end
+        ]]
+        alua.spawn(code, true, spawncb)
+    end
+end
+
+alua.connect(&quot;192.168.0.1&quot;, 8888, conncb)
+alua.loop()
+</pre>
+
+<p><a href ="#api">Voltar ao topo</a></p>
+
+<!-- SEND_DATA -->
+<p>&nbsp;</p>
+
+<h4 class="subsection"><a name="alua.send_data" id="alua.send_data"></a>alua.send_data(destination, data[, callback])</h4>
+<h4>O que faz</h4>
+<p align="justify">Envia um dado a um processo.</p>
+<h4>Descri&ccedil;&atilde;o</h4>
+<p align="justify">Fun&ccedil;&atilde;o para enviar dados, argumento <code class="inline">data</code> dos tipos boolean, number, string ou table, a um processo, argumento <code class="inline">destination</code> no mesmo formato de <a href="#alua.id">alua.id</a>. O argumento <code class="inline">callback</code> &eacute; opcional e indicar&aacute; uma fun&ccedil;&atilde;o para ser chamada de forma ass&iacute;ncrona com o retorno.</p>
+<p align="justify">O dado ser&aacute; processado no destino pelo tratador definido pela fun&ccedil;&atilde;o <a href="#alua.reg_data_handler">alua.reg_data_handler</a>.</p>
+<h4>Valor de retorno</h4>
+<p align="justify">Retorna <code class="inline">true</code> se o dado foi enviada com sucesso. Caso o processo n&atilde;o esteja conectado &agrave; um deamon s&atilde;o retornados o valores <code class="inline">(false, &quot;not connected&quot;)</code>.</p>
+
+<p align="justify">J&aacute; os valores retornados de forma ass&iacute;ncrona s&atilde;o passados como argumento para a fun&ccedil;&atilde;o de callback em uma tabela com os seguintes campos:</p>
+    <table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
+        <tbody>
+        <tr>
+            <th>Campo</th>
+            <th>Valor</th>
+            <th>Tipo</th>
+        </tr>
+        <tr>
+            <td rowspan="2">status</td>
+            <td>&quot;ok&quot; se o dado foi recebido e processado com sucesso</td>
+            <td>string</td>
+        </tr>
+        <tr>
+            <td>&quot;error&quot; se ocorreu algum erro</td>
+            <td>string</td>
+        </tr>
+        <tr>
+            <td>src</td>
+            <td>identificador do destinat&aacute;rio da mensagem</td>
+            <td>string</td>
+        </tr>
+        <tr>
+            <td>error</td>
+            <td>descri&ccedil;&atilde;o do erro quando o campo status=&quot;error&quot;</td>
+            <td>string</td>
+        </tr>
+        </tbody>
+    </table> 
+
+<h4>Exemplo de uso</h4>
+<p align="justify">O c&oacute;digo a seguir cria um novo processo e lhe envia um dado do tipo number:</p>
+<pre class="terminal">require(&quot;alua&quot;)
+
+function sendcb(reply)
+    if reply.status==&quot;ok&quot; then
+        print(&quot;Data sent!&quot;)
+    end
+end
+
+function spawncb(reply)
+    if reply.status==&quot;ok&quot; then
+        local data = 2
+        alua.send_data(reply.id, data, sendcb)
+    end
+end
+
+function conncb(reply)
+    if reply.status==&quot;ok&quot; then
+        local code = [[
+            local function user_data_handler(data)
+                print(data)
+            end
+            
+            alua.reg_data_handler(user_data_handler)
+        ]]
+        alua.spawn(code, true, spawncb)
+    end
+end
+
+alua.connect(&quot;192.168.0.1&quot;, 8888, conncb)
+alua.loop()
+</pre>
+
+<p><a href ="#api">Voltar ao topo</a></p>
+
+<!-- SEND EVENT-->
+<p>&nbsp;</p>
+
+<h4 class="subsection"><a name="alua.send_event" id="alua.send_event"></a>alua.send_event(destination, event_type, data[, callback])</h4>
+<h4>O que faz</h4>
+<p align="justify">Envia um evento a um processo.</p>
+<h4>Descri&ccedil;&atilde;o</h4>
+<p align="justify">Fun&ccedil;&atilde;o para enviar um evento, argumento <code class="inline">event_type</code> do tipo string, contendo um dado, argumento <code class="inline">data</code>, a um processo, argumento <code class="inline">destination</code> no mesmo formato de <a href="#alua.id">alua.id</a>. O argumento <code class="inline">callback</code> &eacute; opcional e indicar&aacute; uma fun&ccedil;&atilde;o para ser chamada de forma ass&iacute;ncrona com o retorno.</p>
+
+<p align="justify">O evento ser&aacute; processado pelo tratador definido pela fun&ccedil;&atilde;o <a href="#alua.reg_event">alua.reg_event</a>.</p>
+
+<h4>Valor de retorno</h4>
+<p align="justify">Retorna <code class="inline">true</code> se o evento foi enviado com sucesso. Caso o processo n&atilde;o esteja conectado &agrave; um deamon s&atilde;o retornados o valores <code class="inline">(false, &quot;not connected&quot;)</code>.</p>
+
+<p align="justify">J&aacute; os valores retornados de forma ass&iacute;ncrona s&atilde;o passados como argumento para a fun&ccedil;&atilde;o de callback em uma tabela com os seguintes campos:</p>
+    <table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
+        <tbody>
+        <tr>
+            <th>Campo</th>
+            <th>Valor</th>
+            <th>Tipo</th>
+        </tr>
+        <tr>
+            <td rowspan="2">status</td>
+            <td>&quot;ok&quot; se o evento foi recebido e processado com sucesso</td>
+            <td>string</td>
+        </tr>
+        <tr>
+            <td>&quot;error&quot; se ocorreu algum erro</td>
+            <td>string</td>
+        </tr>
+        <tr>
+            <td>src</td>
+            <td>identificador do destinat&aacute;rio da mensagem</td>
+            <td>string</td>
+        </tr>
+        <tr>
+            <td>error</td>
+            <td>descri&ccedil;&atilde;o do erro quando o campo status=&quot;error&quot;</td>
+            <td>string</td>
+        </tr>
+        </tbody>
+    </table> 
+
+<h4>Exemplo de uso</h4>
+<p align="justify">O c&oacute;digo a seguir cria um novo processo e lhe envia um evento do tipo &quot;evt_print_error_msg&quot;:</p>
+<pre class="terminal">require(&quot;alua&quot;)
+
+function sendcb(reply)
+    if reply.status==&quot;ok&quot; then
+        print(&quot;Message sent!&quot;)
+    end
+end
+
+function spawncb(reply)
+    if reply.status==&quot;ok&quot; then
+        local err_message = &quot;Not enough memory!&quot;
+        alua.send_event(reply.id, &quot;evt_print_error_msg&quot;, err_message, sendcb)
+    end
+end
+
+function conncb(reply)
+    if reply.status==&quot;ok&quot; then
+        local code = [[
+            local function handler_print_error_msg(msg)
+                print(&quot;ERROR: &quot; .. msg)
+            end
+            
+            alua.reg_event(&quot;evt_print_error_msg&quot;, handler_print_error_msg)
         ]]
         alua.spawn(code, true, spawncb)
     end
@@ -625,6 +810,17 @@ end
 alua.connect(&quot;192.168.0.1&quot;, 8888, conncb)
 alua.loop()
 </pre>
+
+<p><a href ="#api">Voltar ao topo</a></p>
+
+<!-- UNREG_EVENT -->
+<p>&nbsp;</p>
+
+<h4 class="subsection"><a name="alua.unreg_event" id="alua.unreg_event"></a>alua.unreg_event(event)</h4>
+<h4>O que faz</h4>
+<p align="justify">Desregistra um tratador de evento definido pelo usu&aacute;rio.</p>
+<h4>Descri&ccedil;&atilde;o</h4>
+<p align="justify">Fun&ccedil;&atilde;o para desregistrar o tratador para evento definido pelo usuário, argumento <code class="inline">event</code>. 
 
 <p><a href ="#api">Voltar ao topo</a></p>
 </body>
