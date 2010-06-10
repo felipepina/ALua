@@ -27,7 +27,17 @@
 </script>
 <h2 class="title" align="center">ALua: Programa&ccedil;&atilde;o Paralela e Distribu&iacute;da em Lua</h2>
 <hr>    
-    
+<table class="header">
+<tbody>
+	<tr>
+		<td><a href="index.html">P&aacute;gina Inicial</a></td>
+		<td><a href="index.html#download">Download</a></td>
+		<td><a href="index.html#doc">Documenta&ccedil;&atilde;o</a></td>
+	</tr>
+</tbody>
+</table>
+<hr>
+
 <h3 class="section"><a name="api" id="api"></a>A API do ALua</h3>
 <ul>
 <li>ALua</li>
@@ -35,6 +45,7 @@
     <li><a href="#alua.connect">alua.connect</a></li>
     <li><a href="#alua.create">alua.create</a></li>
     <li><a href="#alua.daemonid">alua.daemonid</a></li>
+    <li><a href="#alua.getdaemons">alua.getdaemons</a></li>
     <li><a href="#alua.id">alua.id</a></li>
     <li><a href="#alua.init">alua.init</a></li>
     <li><a href="#alua.link">alua.link</a></li>
@@ -53,19 +64,12 @@
     <li><a href="#alua.dec_threads">alua.dec_threads</a></li>
     <li><a href="#alua.inc_threads">alua.inc_threads</a></li>
     </ul>
+<li>Constantes para status de mensagens</li>
+    <ul>
+    <li><a href="#alua.ALUA_STATUS_ERROR">alua.ALUA_STATUS_ERROR</a></li>
+    <li><a href="#alua.ALUA_STATUS_OK">alua.ALUA_STATUS_OK</a></li>
+    </ul>
 </ul>
-
-<!-- <p style="margin-left:20px"><a href="#alua.connect">alua.connect</a><br>
-<a href="#alua.create">alua.create</a><br>
-<a href="#alua.daemonid">alua.daemonid</a><br>
-<a href="#alua.id">alua.id</a><br>
-<a href="#alua.init">alua.init</a><br>
-<a href="#alua.link">alua.link</a><br>
-<a href="#alua.loop">alua.loop</a><br>
-<a href="#alua.quit">alua.quit</a><br>
-<a href="#alua.send">alua.send</a><br>
-<a href="#alua.spawn">alua.spawn</a><br>
-</p> -->
 
 <hr>
 
@@ -74,10 +78,15 @@
 
 <h4 class="subsection"><a name="alua.connect" id="alua.connect"></a>alua.connect(ip, port[, callback])</h4>
 <h4>O que faz</h4>
+
 <p align="justify">Conecta um processo a um daemon.</p>
+
 <h4>Descri&ccedil;&atilde;o</h4>
+
 <p align="justify">Fun&ccedil;&atilde;o para conectar o processo solicitante ao daemon especificado pelo endere&ccedil;o ip e porta nos argumentos <code class="inline">ip</code> e <code class="inline">port</code> respectivamente. O argumento <code class="inline">callback</code> &eacute; opcional e indicar&aacute; uma fun&ccedil;&atilde;o para ser chamada de forma ass&iacute;ncrona com o retorno do daemon.</p>
+
 <h4>Valor de retorno</h4>
+
 <p align="justify">Retorna <code class="inline">true</code> se a solicita&ccedil;&atilde;o foi enviada com sucesso e <code class="inline">false</code> caso ocorra algum erro. Os poss&iacute;veis erros s&atilde;o:</p>
 
 <table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
@@ -108,7 +117,7 @@
     </tr>
     <tr>
         <td>status</td>
-        <td>&quot;ok&quot; no caso de sucesso na conex&atilde;o</td>
+        <td>alua.ALUA_STATUS_OK no caso de sucesso na conex&atilde;o</td>
         <td>string</td>
     </tr>
     <tr>
@@ -124,13 +133,15 @@
 </table> 
 
 <p align="justify">Esta fun&ccedil;&atilde;o tamb&eacute;m configura o valor dos campos <a href="#alua.id">alua.id</a> e <a href="#alua.daemonid">alua.daemonid</a>.</p>
+
 <h4>Exemplo de uso</h4>
+
 <p align="justify">Para conectar um processo a um daemon na porta 8888 de uma m&aacute;quina com IP 192.168.0.1, pode-se usar o seguinte c&oacute;digo:</p>
 
 <pre class="terminal">require(&quot;alua&quot;)
 
 function conncb(reply)
-    if reply.status==&quot;ok&quot; then
+    if reply.status == alua.ALUA_STATUS_OK then
         print(reply.id)
         print(reply.daemonid)
     end
@@ -146,14 +157,23 @@ alua.loop()
 <p>&nbsp;</p>
 
 <h4 class="subsection"><a name="alua.create" id="alua.create"></a>alua.create(ip, port)</h4>
+
 <h4>O que faz</h4>
+
 <p align="justify">Cria um novo daemon utilizando o endere&ccedil;os ip e porta especificados.</p>
+
 <h4>Descri&ccedil;&atilde;o</h4>
+
 <p align="justify">A fun&ccedil;&atilde;o recebe dois argumentos: <code class="inline">ip</code> do tipo string e <code class="inline">port</code> do tipo num&eacute;rico e cria um daemon.</p>
+
 <h4>Valor de retorno</h4>
+
 <p align="justify">N&atilde;o h&aacute; valor de retorno. Esta fun&ccedil;&atilde;o apenas configura o valor dos campos <a href="#alua.id">alua.id</a> e <a href="#alua.daemonid">alua.daemonid</a>.</p>
+
 <h4>Exemplo de uso</h4>
+
 <p align="justify">Para criar um daemon na porta 8888 de uma m&aacute;quina com IP 192.168.0.1, pode-se usar o seguinte c&oacute;digo:</p>
+
 <pre class="terminal">require(&quot;alua&quot;)
 
 alua.create(&quot;192.168.0.1&quot;, 8888)
@@ -168,8 +188,10 @@ alua.loop()
 <p>&nbsp;</p>
 
 <h4 class="subsection"><a name="alua.daemonid" id="alua.daemonid"></a>alua.daemonid</h4>
+
 <h4>Descri&ccedil;&atilde;o</h4>
-<p align="justify">Este campo cont&eacute;m o identificador &uacute;nico do daemon ao qual o processo est&aacute; conectado. Caso o processo n&atilde;o esteja conectado, este campo estar&aacute; com o valor <code class="inline">nil</code>.</p> Se o processo for um daemon ser&aacute; igual ao campo <a href="#alua.id">alua.id</a>. Possui o formato &lt;ip&gt;:&lt;port&gt;/0, por exemplo 192.168.0.1:8080/0.
+
+<p align="justify">Este campo cont&eacute;m o identificador &uacute;nico do daemon ao qual o processo est&aacute; conectado. Caso o processo n&atilde;o esteja conectado, este campo estar&aacute; com o valor <code class="inline">nil</code>. Se o processo for um daemon ser&aacute; igual ao campo <a href="#alua.id">alua.id</a>. Possui o formato &lt;ip&gt;:&lt;port&gt;/0, por exemplo 192.168.0.1:8080/0.</p>
 
 <p><a href ="#api">Voltar ao topo</a></p>
 
@@ -177,14 +199,40 @@ alua.loop()
 <p>&nbsp;</p>
 
 <h4 class="subsection"><a name="alua.dec_threads" id="alua.dec_threads"></a>alua.dec_threads(qtd)</h4>
+
 <h4>O que faz</h4>
+
 <p align="justify">Decrementa o n&uacute;mero de threads no pool.</p>
+
 <h4>Descri&ccedil;&atilde;o</h4>
-<p align="justify">A fun&ccedil;&atilde;o recebe como argumento a quantidade de threads que devem ser encerradas, assim o argumento <code class="inline">qtd</code> &eacute; do tipo n&uacute;merico. Processos criados usando a fun&ccedil;&atilde;o <a href="#alua.spawn">alua.spawn</a> e associados a um outro processo n&atilde;o podem alterar o tamanho do pool.</p>
+
+<p align="justify">A fun&ccedil;&atilde;o recebe como argumento a quantidade de threads que devem ser encerradas, assim o argumento <code class="inline">qtd</code> &eacute; do tipo n&uacute;merico. Processos Lua criados usando a fun&ccedil;&atilde;o <a href="#alua.spawn">alua.spawn</a> n&atilde;o podem alterar o tamanho do pool. A quantidade m&iacute;nima de threads ativas no pool &eacute; dois. Caso a solicita&ccedil;&atilde;o decremente para um n&uacute;mero menor que 2 ser&aacute; retornado erro.</p>
+
 <h4>Valor de retorno</h4>
-<p align="justify">Retorna o novo tamanho do pool de threads. Ou zero que ocorrer algum erro.</p>
+
+<p align="justify">Retorna o novo tamanho do pool de threads. Ou zero com uma das seguintes mensagem caso ocorra algum erro:</p>
+
+<table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
+    <tbody>
+    <tr>
+        <th>Erro</th>
+        <th>Descri&ccedil;&atilde;o</th>
+    </tr>
+    <tr>
+        <td>&quot;only a main process could free threads&quot;</td>
+        <td>caso o processo solicitante seja um processo Lua</td>
+    </tr>
+    <tr>
+        <td>&quot;thread pool is already at the minimum size&quot;</td>
+        <td>caso o novo tamanho do pool fique menor que o m&iacute;nimo</td>
+    </tr>
+    </tbody>
+</table>
+
 <h4>Exemplo de uso</h4>
+
 <p align="justify">No trecho de c&oacute;digo a seguir o tamanha do pool &eacute; incrementado e decrementado:</p>
+
 <pre class="terminal">require(&quot;alua&quot;)
 
 local count = 0
@@ -213,21 +261,21 @@ function sendcb(reply)
 		
 	end
 
-	if reply.status == &quot;ok&quot; then
+	if reply.status == alua.ALUA_STATUS_OK then
 		local code = &quot;ping_message = alua.id .. ping_message&quot;
 		alua.send(reply.src, code, sendcb)
 	end	
 end
 
 function spawncb(reply)
-	if reply.status == &quot;ok&quot; then
+	if reply.status == alua.ALUA_STATUS_OK then
 		local code = &quot;ping_message = alua.id .. ping_message&quot;
 		alua.send(reply.id, code, sendcb)
 	end
 end
 
 function conncb(reply)
-  if reply.status == &quot;ok&quot; then
+  if reply.status == alua.ALUA_STATUS_OK then
 	local code = [[
 		ping_message = &quot;: Ping!&quot;
 	]]
@@ -243,12 +291,81 @@ alua.loop()
 
 <p><a href ="#api">Voltar ao topo</a></p>
 
+<!-- GETDAEMONS -->
+<p>&nbsp;</p>
+
+<h4 class="subsection"><a name="alua.getdaemons" id="alua.getdaemons"></a>alua.getdaemons()</h4>
+
+<h4>O que faz</h4>
+
+<p align="justify">Retorna a lista de daemons pertencentes a rede.</p>
+
+<h4>Descri&ccedil;&atilde;o</h4>
+
+<p align="justify">Fun&ccedil;&atilde;o para obter a lista de daemons que fazem parte da rede de daemons.</p>
+
+<h4>Valor de retorno</h4>
+
+<p align="justify">A lista &eacute; retornada de forma s&iacute;ncrona e &eacute; uma tabela no formato de array. Somente um processo daemon pode solicitar a lista, caso algum outro tipo de processo solicitar a fun&ccedil;&atilde;o retorna <code class="inline">nil</code> e a mensagem de erro abaixo:</p>
+
+<table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
+    <tbody>
+    <tr>
+        <th>Erro</th>
+        <th>Descri&ccedil;&atilde;o</th>
+    </tr>
+    <tr>
+        <td>&quot;not allowed&quot;</td>
+        <td>caso o processo solicitante n&atilde;o seja um processo daemon</td>
+    </tr>
+    </tbody>
+</table>
+
+<h4>Exemplo de uso</h4>
+
+<p align="justify">Um processo ALua envia para cada daemon da rede um comando para que estes imprimam a lista de daemons:</p>
+
+<pre class="terminal">require(&quot;alua&quot;)
+
+local function linkcb(reply)
+    if reply.status == alua.ALUA_STATUS_OK then
+        local code = [[
+            local d, e = alua.getdaemons()
+
+            if d then
+                for k,v in pairs(d) do
+                    print(alua.id, k, v)
+                end
+            else
+                print(alua.id, e)
+            end
+        ]]
+
+        for i, v in ipairs(reply.daemons) do
+            alua.send(v, code)
+        end
+    end
+end
+
+function conncb(reply)
+    assert(reply.status == alua.ALUA_STATUS_OK, err_msg)
+    alua.link(daemonlist, linkcb)
+end
+
+alua.connect("192.168.0.1", 8888, conncb)
+alua.loop()
+</pre>
+
+<p><a href ="#api">Voltar ao topo</a></p>
+
 <!-- ID -->
 <p>&nbsp;</p>
 
 <h4 class="subsection"><a name="alua.id" id="alua.id"></a>alua.id</h4>
+
 <h4>Descri&ccedil;&atilde;o</h4>
-<p align="justify">Este campo cont&eacute;m o identificador &uacute;nico do processo. Caso o processo ainda n&atilde;o possua um id, este campo estar&aacute; com o valor <code class="inline">nil</code>.</p> Possui o formato: &lt;ip&gt;:&lt;port&gt;/&lt;seq&gt;, por exemplo 192.168.0.1:8080/1. No caso de um processo Lua associado a outro processo Lua o formato ser&aacute; &lt;ip&gt;:&lt;port&gt;/&lt;seq&gt;/&lt;seq_pro&gt;, por exemplo 192.168.0.1:8080/1/141818847953318956755490047055692310416
+
+<p align="justify">Este campo cont&eacute;m o identificador &uacute;nico do processo. Caso o processo ainda n&atilde;o possua um id, este campo estar&aacute; com o valor <code class="inline">nil</code>. Nos processos ALua o formato &eacute;: &lt;ip&gt;:&lt;port&gt;/&lt;seq&gt;, o &lt;seq&gt; &eacute; sempre maior que 0. Por exemplo 192.168.0.1:8080/1. No caso dos processos Lua o formato ser&aacute; &lt;ip&gt;:&lt;port&gt;/&lt;seq&gt;/&lt;seq_pro&gt;, o &lt;ip&gt;:&lt;port&gt;/&lt;seq&gt; identifica o processo ALua no qual ele est&aacute; associado.Por exemplo 192.168.0.1:8080/1/141818847953318956755490047055692310416.</p>
 
 <p><a href ="#api">Voltar ao topo</a></p>
 
@@ -256,14 +373,40 @@ alua.loop()
 <p>&nbsp;</p>
 
 <h4 class="subsection"><a name="alua.inc_threads" id="alua.inc_threads"></a>alua.inc_threads(qtd)</h4>
+
 <h4>O que faz</h4>
+
 <p align="justify">Incrementa o n&uacute;mero de threads no pool.</p>
+
 <h4>Descri&ccedil;&atilde;o</h4>
-<p align="justify">A fun&ccedil;&atilde;o recebe como argumento a quantidade de threads que devem ser criadas, assim o argumento <code class="inline">qtd</code> &eacute; do tipo n&uacute;merico. Processos criados usando a fun&ccedil;&atilde;o <a href="#alua.spawn">alua.spawn</a> e associados a um outro processo n&atilde;o podem alterar o tamanho do pool.</p>
+
+<p align="justify">A fun&ccedil;&atilde;o recebe como argumento a quantidade de threads que devem ser criadas, assim o argumento <code class="inline">qtd</code> &eacute; do tipo n&uacute;merico. Processos Lua criados usando a fun&ccedil;&atilde;o <a href="#alua.spawn">alua.spawn</a> n&atilde;o podem alterar o tamanho do pool.</p>
+
 <h4>Valor de retorno</h4>
-<p align="justify">Retorna o novo tamanho do pool de threads. Ou zero que ocorrer algum erro.</p>
+
+<p align="justify">Retorna o novo tamanho do pool de threads. Ou zero com uma das seguintes mensagem caso ocorra algum erro:</p>
+
+<table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
+    <tbody>
+    <tr>
+        <th>Erro</th>
+        <th>Descri&ccedil;&atilde;o</th>
+    </tr>
+    <tr>
+        <td>&quot;only a main process could free threads&quot;</td>
+        <td>caso o processo solicitante seja um processo Lua</td>
+    </tr>
+    <tr>
+        <td>&quot;error while creating a new thread&quot;</td>
+        <td>caso ocorra algum erro na cria&ccedil;&atilde;o de uma nova thread</td>
+    </tr>
+    </tbody>
+</table>
+
 <h4>Exemplo de uso</h4>
+
 <p align="justify">No trecho de c&oacute;digo a seguir o tamanha do pool &eacute; incrementado e decrementado:</p>
+
 <pre class="terminal">require(&quot;alua&quot;)
 
 local count = 0
@@ -292,21 +435,21 @@ function sendcb(reply)
 		
 	end
 
-	if reply.status == &quot;ok&quot; then
+	if reply.status == alua.ALUA_STATUS_OK then
 		local code = &quot;ping_message = alua.id .. ping_message&quot;
 		alua.send(reply.src, code, sendcb)
 	end	
 end
 
 function spawncb(reply)
-	if reply.status == &quot;ok&quot; then
+	if reply.status == alua.ALUA_STATUS_OK then
 		local code = &quot;ping_message = alua.id .. ping_message&quot;
 		alua.send(reply.id, code, sendcb)
 	end
 end
 
 function conncb(reply)
-  if reply.status == &quot;ok&quot; then
+  if reply.status == alua.ALUA_STATUS_OK then
 	local code = [[
 		ping_message = &quot;: Ping!&quot;
 	]]
@@ -326,9 +469,13 @@ alua.loop()
 <p>&nbsp;</p>
 
 <h4 class="subsection"><a name="alua.init" id="alua.init"></a>alua.init(config)</h4>
+
 <h4>O que faz</h4>
+
 <p align="justify">Conecta o processo solicitante a um daemon ou cria um processo standalone.</p>
+
 <h4>Descri&ccedil;&atilde;o</h4>
+
 <p align="justify">Fun&ccedil;&atilde;o para conectar o processo solicitante a um daemon especificado no argumento config, que &eacute; uma tabela com os seguintes campos:</p>
 
 <table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
@@ -356,43 +503,46 @@ alua.loop()
     </tbody>
 </table>
 
-<p align="justify">Caso n&atilde;o seja informado um daemon ser&aacute; criado um processo standalone no seguinte endere&ccedil;o e porta: 127.0.0.1:8888.
+<p align="justify">Caso o campo addr seja <code class="inline">nil</code> ser&aacute; criado um processo standalone no seguinte endere&ccedil;o e porta: 127.0.0.1:8888 (observar que no caso do argumento <code class="inline">config</code> ser <code class="inline">nil</code>, tamb&eacute;m ser&aacute; criado um processo standalone).</p>
 
 <h4>Valor de retorno</h4>
 
 <p align="justify">Os valores s&atilde;o retornados de forma ass&iacute;ncrona e s&atilde;o passados como argumento para a fun&ccedil;&atilde;o de callback em uma tabela com os seguintes campos:</p>
-    <table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
-        <tbody>
-        <tr>
-            <th>Campo</th>
-            <th>Valor</th>
-            <th>Tipo</th>
-        </tr>
-        <tr>
-            <td>status</td>
-            <td>&quot;ok&quot; no caso de sucesso na conex&atilde;o</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <td>id</td>
-            <td>identificador do processo solicitante da conex&atilde;o (gerado pelo daemon)</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <td>daemonid</td>
-            <td>identificador do daemon ao qual a conex&atilde;o foi estabelecida</td>
-            <td>string</td>
-        </tbody>
-    </table> 
+
+<table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
+    <tbody>
+    <tr>
+        <th>Campo</th>
+        <th>Valor</th>
+        <th>Tipo</th>
+    </tr>
+    <tr>
+        <td>status</td>
+        <td>alua.ALUA_STATUS_OK no caso de sucesso na conex&atilde;o</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>id</td>
+        <td>identificador do processo solicitante da conex&atilde;o (gerado pelo daemon)</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>daemonid</td>
+        <td>identificador do daemon ao qual a conex&atilde;o foi estabelecida</td>
+        <td>string</td>
+    </tbody>
+</table> 
 
 <p align="justify">Esta fun&ccedil;&atilde;o tamb&eacute;m configura o valor dos campos <a href="#alua.id">alua.id</a> e <a href="#alua.daemonid">alua.daemonid</a>.</p>
 
 <h4>Exemplo de uso</h4>
+
 <p align="justify">Para conectar um processo a um daemon na porta 8888 de uma m&aacute;quina com IP 192.168.0.1, pode-se usar o seguinte c&oacute;digo:</p>
+
 <pre class="terminal">require(&quot;alua&quot;)
 
 function initcb(reply)
-    if reply.status==&quot;ok&quot; then
+    if reply.status == alua.ALUA_STATUS_OK then
         print(reply.id)
         print(reply.daemonid)
     end
@@ -408,57 +558,66 @@ alua.loop()
 <p>&nbsp;</p>
 
 <h4 class="subsection"><a name="alua.link" id="alua.link"></a>alua.link(daemons[, callback])</h4>
+
 <h4>O que faz</h4>
+
 <p align="justify">Conecta os daemons informados formando uma rede. Nesta rede todo os daemons possuem conex&atilde;o direta com os demais daemons participantes.</p>
+
 <h4>Descri&ccedil;&atilde;o</h4>
+
 <p align="justify">Fun&ccedil;&atilde;o ir&aacute; interligar em rede os daemons da tabela informada no argumento <code class="inline">daemons</code>. Deve-se informar o <a href="#alua.daemonid">alua.daemonid</a> de cada daemon. O argumento <code class="inline">callback</code> &eacute; opcional e indicar&aacute; uma fun&ccedil;&atilde;o para ser chamada de forma ass&iacute;ncrona com o retorno.</p>
+
 <h4>Valor de retorno</h4>
+
 <p align="justify">Retorna <code class="inline">true</code> se a solicita&ccedil;&atilde;o de cria&ccedil;&atilde;o da rede foi enviada com sucesso. Caso o processo n&atilde;o esteja conectado &agrave; um deamon s&atilde;o retornados os valores <code class="inline">(false, &quot;not connected&quot;)</code>.</p>
     
 <p align="justify">J&aacute; os valores retornados de forma ass&iacute;ncrona s&atilde;o passados como argumento para a fun&ccedil;&atilde;o de callback em uma tabela com os seguintes campos:</p>
-    <table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
-        <tbody>
-        <tr>
-            <th>Campo</th>
-            <th>Valor</th>
-            <th>Tipo</th>
-        </tr>
-        <tr>
-            <td rowspan="2">status</td>
-            <td>&quot;ok&quot; se a rede foi criado com sucesso</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <td>&quot;error&quot; se ocorreu algum erro na cria&ccedil;&atilde;o da rede</td>
-            <td>string</td>
-        <tr>
-            <td>error</td>
-            <td>descri&ccedil;&atilde;o de erro quando status=&quot;error&quot;</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <td>daemons</td>
-            <td>lista de daemons ligados em rede</td>
-            <td>tabela</td>
-        </tbody>
-    </table> 
+
+<table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
+    <tbody>
+    <tr>
+        <th>Campo</th>
+        <th>Valor</th>
+        <th>Tipo</th>
+    </tr>
+    <tr>
+        <td rowspan="2">status</td>
+        <td>alua.ALUA_STATUS_OK se a rede foi criado com sucesso</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>alua.ALUA_STATUS_ERROR se ocorreu algum erro na cria&ccedil;&atilde;o da rede</td>
+        <td>string</td>
+    <tr>
+        <td>error</td>
+        <td>descri&ccedil;&atilde;o de erro quando status=alua.ALUA_STATUS_ERROR</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>daemons</td>
+        <td>lista de daemons ligados em rede</td>
+        <td>tabela</td>
+    </tbody>
+</table> 
 
 <h4>Exemplo de uso</h4>
+
 <p align="justify">Para conectar um processo a um daemon na porta 8888 de uma m&aacute;quina com ip 192.168.0.1, pode-se usar o seguinte c&oacute;digo:</p>
+
 <pre class="terminal">require(&quot;alua&quot;)
 
 function linkcb(reply)
-    if reply.status==&quot;ok&quot; then
+    if reply.status == alua.ALUA_STATUS_OK then
         for i,v in ipairs(status.daemons) do
         	print(i,v)
         end
-    elseif reply.status==&quot;error&quot; then
+    elseif reply.status == alua.ALUA_STATUS_ERROR then
         print(reply.error)
     end
 end
 
 function conncb(reply)
-    if reply.status==&quot;ok&quot; then
+    if reply.status == alua.ALUA_STATUS_OK then
         local daemons = {&quot;192.168.0.1:8080/0&quot;, &quot;192.168.0.1:8081/0&quot;, &quot;192.168.0.1:8082/0&quot;}
         alua.link(daemons, linkcb)
     end
@@ -474,9 +633,13 @@ alua.loop()
 <p>&nbsp;</p>
 
 <h4 class="subsection"><a name="alua.loop" id="alua.loop"></a>alua.loop()</h4>
+
 <h4>O que faz</h4>
+
 <p align="justify">Executa o loop de eventos do ALua.</p>
+
 <h4>Descri&ccedil;&atilde;o</h4>
+
 <p align="justify">Fun&ccedil;&atilde;o respons&aacute;vel por verificar e disparar os eventos. Em geral, um programa ALua inicia sua execu&ccedil;&atilde;o com uma requisi&ccedil;&atilde;o de conex&atilde;o a um daemon atrav&eacute;s de <a href="#alua.connect">alua.connect</a>, e ent&atilde;o invoca alua.loop para o tratamentos dos eventos subseq&uuml;entes.</p>
 
 <p><a href ="#api">Voltar ao topo</a></p>
@@ -485,9 +648,13 @@ alua.loop()
 <p>&nbsp;</p>
 
 <h4 class="subsection"><a name="alua.quit" id="alua.quit"></a>alua.quit()</h4>
+
 <h4>O que faz</h4>
+
 <p align="justify">Termina a execu&ccedil;&atilde;o do loop de eventos do ALua.</p>
+
 <h4>Descri&ccedil;&atilde;o</h4>
+
 <p align="justify">Fun&ccedil;&atilde;o que ir&aacute; indicar ao processo que este pare de executar o loop de eventos e subseq&uuml;entemente encerre a sua execu&ccedil;&atilde;o.</p>
 
 <p><a href ="#api">Voltar ao topo</a></p>
@@ -496,10 +663,14 @@ alua.loop()
 <p>&nbsp;</p>
 
 <h4 class="subsection"><a name="alua.reg_data_handler" id="alua.reg_data_handler"></a>alua.reg_data_handler(handler)</h4>
+
 <h4>O que faz</h4>
+
 <p align="justify">Registra um tratador para recebimento de dados.</p>
+
 <h4>Descri&ccedil;&atilde;o</h4>
-<p align="justify">Fun&ccedil;&atilde;o para registrar o tratador, argumento <code class="inline">handler</code> do tipo function, de dados recebidos que foram enviados utilizando a fun&ccedil;&atilde;o <a href="#alua.send_data">alua.send_data</a>. 
+
+<p align="justify">Fun&ccedil;&atilde;o para registrar o tratador de dados recebidos, argumento <code class="inline">handler</code> do tipo function.  Usada em conjunto com a fun&ccedil;&atilde;o <a href="#alua.send_data">alua.send_data</a> que ser&aacute; respons&aacute;vel pelo envio dos dados.</p>
 
 <p><a href ="#api">Voltar ao topo</a></p>
 
@@ -507,10 +678,90 @@ alua.loop()
 <p>&nbsp;</p>
 
 <h4 class="subsection"><a name="alua.reg_event" id="alua.reg_event"></a>alua.reg_event(event, handler)</h4>
+
 <h4>O que faz</h4>
+
 <p align="justify">Registra um tratador de evento definido pelo usu&aacute;rio.</p>
+
 <h4>Descri&ccedil;&atilde;o</h4>
-<p align="justify">Fun&ccedil;&atilde;o para registrar o tratador, argumento <code class="inline">handler</code> do tipo function, para evento definido pelo usuário, argumento <code class="inline">event</code>, que foi enviado utilizando a fun&ccedil;&atilde;o <a href="#alua.send_event">alua.send_event</a>. 
+
+<p align="justify">Fun&ccedil;&atilde;o para registrar o tratador (argumento <code class="inline">handler</code> do tipo function) para evento definido pelo usu&aacute;rio (argumento <code class="inline">event</code> do tipo string). Usada em conjunto com a fun&ccedil;&atilde;o <a href="#alua.send_event">alua.send_event</a> que ser&aacute; respons&aacute;vel pelo envio dos eventos.</p>
+
+<p>Este tratador ser&aacute; respons&aacute;vel por chamar a fun&ccedil;&atilde;o de callback caso esta tenha sido informada na fun&ccedil;&atilde;o <a href="#alua.send_event">alua.send_event</a>. O tratador ir&aacute; receber uma mensagem com os seguintes campos:</p>
+
+<table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
+    <tbody>
+    <tr>
+        <th>Campo</th>
+        <th>Valor</th>
+        <th>Tipo</th>
+    </tr>
+    <tr>
+        <td>type</td>
+        <td>tipo do evento de usu&aacute;rio que o tratador processa</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>src</td>
+        <td>identificador do remetente do evento</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>dst</td>
+        <td>identificador do destinat&aacute;rio do evento</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td rowspan="4">data</td>
+        <td rowspan="4">dado recebido</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>num&eacute;rico</td>
+    </tr>
+    <tr>
+        <td>booleano</td>
+    </tr>
+    <tr>
+        <td>tabela</td>
+    </tr>
+    <tr>
+        <td>cb</td>
+        <td>identificador da callback do remetente</td>
+        <td>num&eacute;rico</td>
+    </tr>
+    </tbody>
+</table>
+
+<p>A callback que ele chamar&aacute; recebe uma tabela como argumento com os seguintes campos:</p>
+
+<table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
+    <tbody>
+    <tr>
+        <th>Campo</th>
+        <th>Valor</th>
+        <th>Tipo</th>
+    </tr>
+    <tr>
+        <td>src</td>
+        <td>identificador do processo remetente (para qual a resposta ser&aacute; enviada)</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>status</td>
+        <!--
+            TODO Colocar link para este dois campos novos
+        -->
+        <td>estado do processamento. alua.ALUA_STATUS_OK ou alua.ALUA_STATUS_ERROR</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>error</td>
+        <td>descri&ccedil;&atilde;o do erro caso o campo status seja alua.ALUA_STATUS_ERROR</td>
+        <td>string</td>
+    </tr>
+    </tbody>
+</table>
 
 <p><a href ="#api">Voltar ao topo</a></p>
 
@@ -518,55 +769,63 @@ alua.loop()
 <p>&nbsp;</p>
 
 <h4 class="subsection"><a name="alua.send" id="alua.send"></a>alua.send(destination, string[, callback])</h4>
+
 <h4>O que faz</h4>
 <p align="justify">Envia uma string a um processo.</p>
+
 <h4>Descri&ccedil;&atilde;o</h4>
-<p align="justify">Fun&ccedil;&atilde;o para enviar uma string, argumento <code class="inline">string</code> do tipo string, a um processo, argumento <code class="inline">destination</code> no mesmo formato de <a href="#alua.id">alua.id</a>, para ser executada no processo destino. O argumento <code class="inline">callback</code> &eacute; opcional e indicar&aacute; uma fun&ccedil;&atilde;o para ser chamada de forma ass&iacute;ncrona com o retorno.</p>
+
+<p align="justify">Fun&ccedil;&atilde;o para enviar uma string (argumento <code class="inline">string</code> do tipo string) a um processo (argumento <code class="inline">destination</code> no mesmo formato de <a href="#alua.id">alua.id</a>) para ser executada no processo destino. O argumento <code class="inline">callback</code> &eacute; opcional e indicar&aacute; uma fun&ccedil;&atilde;o para ser chamada de forma ass&iacute;ncrona com o retorno.</p>
+
 <h4>Valor de retorno</h4>
+
 <p align="justify">Retorna <code class="inline">true</code> se a mensagem foi enviada com sucesso. Caso o processo n&atilde;o esteja conectado &agrave; um deamon s&atilde;o retornados o valores <code class="inline">(false, &quot;not connected&quot;)</code>.</p>
 
 <p align="justify">J&aacute; os valores retornados de forma ass&iacute;ncrona s&atilde;o passados como argumento para a fun&ccedil;&atilde;o de callback em uma tabela com os seguintes campos:</p>
-    <table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
-        <tbody>
-        <tr>
-            <th>Campo</th>
-            <th>Valor</th>
-            <th>Tipo</th>
-        </tr>
-        <tr>
-            <td rowspan="2">status</td>
-            <td>&quot;ok&quot; se a mensagem foi recebida e executada com sucesso</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <td>&quot;error&quot; se ocorreu algum erro</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <td>src</td>
-            <td>identificador do destinat&aacute;rio da mensagem</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <td>error</td>
-            <td>descri&ccedil;&atilde;o do erro quando o campo status=&quot;error&quot;</td>
-            <td>string</td>
-        </tr>
-        </tbody>
-    </table> 
+
+<table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
+    <tbody>
+    <tr>
+        <th>Campo</th>
+        <th>Valor</th>
+        <th>Tipo</th>
+    </tr>
+    <tr>
+        <td rowspan="2">status</td>
+        <td>alua.ALUA_STATUS_OK se a mensagem foi recebida e executada com sucesso</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>alua.ALUA_STATUS_ERROR se ocorreu algum erro</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>src</td>
+        <td>identificador do destinat&aacute;rio da mensagem</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>error</td>
+        <td>descri&ccedil;&atilde;o do erro quando o campo status=alua.ALUA_STATUS_ERROR</td>
+        <td>string</td>
+    </tr>
+    </tbody>
+</table> 
 
 <h4>Exemplo de uso</h4>
+
 <p align="justify">O c&oacute;digo a seguir cria um novo processo e lhe envia uma mensagem:</p>
+
 <pre class="terminal">require(&quot;alua&quot;)
 
 function sendcb(reply)
-    if reply.status==&quot;ok&quot; then
+    if reply.status == alua.ALUA_STATUS_OK then
         print(&quot;Message sent!&quot;)
     end
 end
 
 function spawncb(reply)
-    if reply.status==&quot;ok&quot; then
+    if reply.status == alua.ALUA_STATUS_OK then
         local message = [[
             hello()
         ]]
@@ -575,7 +834,7 @@ function spawncb(reply)
 end
 
 function conncb(reply)
-    if reply.status==&quot;ok&quot; then
+    if reply.status == alua.ALUA_STATUS_OK then
         local code = [[
             function hello()
                 print(&quot;Hello!&quot;)
@@ -595,63 +854,73 @@ alua.loop()
 <p>&nbsp;</p>
 
 <h4 class="subsection"><a name="alua.send_data" id="alua.send_data"></a>alua.send_data(destination, data[, callback])</h4>
+
 <h4>O que faz</h4>
+
 <p align="justify">Envia um dado a um processo.</p>
+
 <h4>Descri&ccedil;&atilde;o</h4>
-<p align="justify">Fun&ccedil;&atilde;o para enviar dados, argumento <code class="inline">data</code> dos tipos boolean, number, string ou table, a um processo, argumento <code class="inline">destination</code> no mesmo formato de <a href="#alua.id">alua.id</a>. O argumento <code class="inline">callback</code> &eacute; opcional e indicar&aacute; uma fun&ccedil;&atilde;o para ser chamada de forma ass&iacute;ncrona com o retorno.</p>
+
+<p align="justify">Fun&ccedil;&atilde;o para enviar dados (argumento <code class="inline">data</code> dos tipos boolean, number, string ou table) a um processo (argumento <code class="inline">destination</code> no mesmo formato de <a href="#alua.id">alua.id</a>). O argumento <code class="inline">callback</code> &eacute; opcional e indicar&aacute; uma fun&ccedil;&atilde;o para ser chamada de forma ass&iacute;ncrona com o retorno.</p>
+
 <p align="justify">O dado ser&aacute; processado no destino pelo tratador definido pela fun&ccedil;&atilde;o <a href="#alua.reg_data_handler">alua.reg_data_handler</a>.</p>
+
 <h4>Valor de retorno</h4>
+
 <p align="justify">Retorna <code class="inline">true</code> se o dado foi enviada com sucesso. Caso o processo n&atilde;o esteja conectado &agrave; um deamon s&atilde;o retornados o valores <code class="inline">(false, &quot;not connected&quot;)</code>.</p>
 
 <p align="justify">J&aacute; os valores retornados de forma ass&iacute;ncrona s&atilde;o passados como argumento para a fun&ccedil;&atilde;o de callback em uma tabela com os seguintes campos:</p>
-    <table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
-        <tbody>
-        <tr>
-            <th>Campo</th>
-            <th>Valor</th>
-            <th>Tipo</th>
-        </tr>
-        <tr>
-            <td rowspan="2">status</td>
-            <td>&quot;ok&quot; se o dado foi recebido e processado com sucesso</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <td>&quot;error&quot; se ocorreu algum erro</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <td>src</td>
-            <td>identificador do destinat&aacute;rio da mensagem</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <td>error</td>
-            <td>descri&ccedil;&atilde;o do erro quando o campo status=&quot;error&quot;</td>
-            <td>string</td>
-        </tr>
-        </tbody>
-    </table> 
+
+<table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
+    <tbody>
+    <tr>
+        <th>Campo</th>
+        <th>Valor</th>
+        <th>Tipo</th>
+    </tr>
+    <tr>
+        <td rowspan="2">status</td>
+        <td>alua.ALUA_STATUS_OK se o dado foi recebido e processado com sucesso</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>alua.ALUA_STATUS_ERROR se ocorreu algum erro</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>src</td>
+        <td>identificador do destinat&aacute;rio da mensagem</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>error</td>
+        <td>descri&ccedil;&atilde;o do erro quando o campo status=alua.ALUA_STATUS_ERROR</td>
+        <td>string</td>
+    </tr>
+    </tbody>
+</table> 
 
 <h4>Exemplo de uso</h4>
+
 <p align="justify">O c&oacute;digo a seguir cria um novo processo e lhe envia um dado do tipo number:</p>
+
 <pre class="terminal">require(&quot;alua&quot;)
 
 function sendcb(reply)
-    if reply.status==&quot;ok&quot; then
+    if reply.status == alua.ALUA_STATUS_OK then
         print(&quot;Data sent!&quot;)
     end
 end
 
 function spawncb(reply)
-    if reply.status==&quot;ok&quot; then
+    if reply.status == alua.ALUA_STATUS_OK then
         local data = 2
         alua.send_data(reply.id, data, sendcb)
     end
 end
 
 function conncb(reply)
-    if reply.status==&quot;ok&quot; then
+    if reply.status == alua.ALUA_STATUS_OK then
         local code = [[
             local function user_data_handler(data)
                 print(data)
@@ -673,65 +942,73 @@ alua.loop()
 <p>&nbsp;</p>
 
 <h4 class="subsection"><a name="alua.send_event" id="alua.send_event"></a>alua.send_event(destination, event_type, data[, callback])</h4>
+
 <h4>O que faz</h4>
+
 <p align="justify">Envia um evento a um processo.</p>
+
 <h4>Descri&ccedil;&atilde;o</h4>
-<p align="justify">Fun&ccedil;&atilde;o para enviar um evento, argumento <code class="inline">event_type</code> do tipo string, contendo um dado, argumento <code class="inline">data</code>, a um processo, argumento <code class="inline">destination</code> no mesmo formato de <a href="#alua.id">alua.id</a>. O argumento <code class="inline">callback</code> &eacute; opcional e indicar&aacute; uma fun&ccedil;&atilde;o para ser chamada de forma ass&iacute;ncrona com o retorno.</p>
+
+<p align="justify">Fun&ccedil;&atilde;o para enviar um evento (argumento <code class="inline">event_type</code> do tipo string) contendo um dado (argumento <code class="inline">data</code>) a um processo (argumento <code class="inline">destination</code> no mesmo formato de <a href="#alua.id">alua.id</a>). O argumento <code class="inline">callback</code> &eacute; opcional e indicar&aacute; uma fun&ccedil;&atilde;o para ser chamada de forma ass&iacute;ncrona com o retorno.</p>
 
 <p align="justify">O evento ser&aacute; processado pelo tratador definido pela fun&ccedil;&atilde;o <a href="#alua.reg_event">alua.reg_event</a>.</p>
 
 <h4>Valor de retorno</h4>
+
 <p align="justify">Retorna <code class="inline">true</code> se o evento foi enviado com sucesso. Caso o processo n&atilde;o esteja conectado &agrave; um deamon s&atilde;o retornados o valores <code class="inline">(false, &quot;not connected&quot;)</code>.</p>
 
 <p align="justify">J&aacute; os valores retornados de forma ass&iacute;ncrona s&atilde;o passados como argumento para a fun&ccedil;&atilde;o de callback em uma tabela com os seguintes campos:</p>
-    <table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
-        <tbody>
-        <tr>
-            <th>Campo</th>
-            <th>Valor</th>
-            <th>Tipo</th>
-        </tr>
-        <tr>
-            <td rowspan="2">status</td>
-            <td>&quot;ok&quot; se o evento foi recebido e processado com sucesso</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <td>&quot;error&quot; se ocorreu algum erro</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <td>src</td>
-            <td>identificador do destinat&aacute;rio da mensagem</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <td>error</td>
-            <td>descri&ccedil;&atilde;o do erro quando o campo status=&quot;error&quot;</td>
-            <td>string</td>
-        </tr>
-        </tbody>
-    </table> 
+
+<table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
+    <tbody>
+    <tr>
+        <th>Campo</th>
+        <th>Valor</th>
+        <th>Tipo</th>
+    </tr>
+    <tr>
+        <td rowspan="2">status</td>
+        <td>alua.ALUA_STATUS_OK se o evento foi recebido e processado com sucesso</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>alua.ALUA_STATUS_ERROR se ocorreu algum erro</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>src</td>
+        <td>identificador do destinat&aacute;rio da mensagem</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>error</td>
+        <td>descri&ccedil;&atilde;o do erro quando o campo status=alua.ALUA_STATUS_ERROR</td>
+        <td>string</td>
+    </tr>
+    </tbody>
+</table> 
 
 <h4>Exemplo de uso</h4>
+
 <p align="justify">O c&oacute;digo a seguir cria um novo processo e lhe envia um evento do tipo &quot;evt_print_error_msg&quot;:</p>
+
 <pre class="terminal">require(&quot;alua&quot;)
 
 function sendcb(reply)
-    if reply.status==&quot;ok&quot; then
+    if reply.status == alua.ALUA_STATUS_OK then
         print(&quot;Message sent!&quot;)
     end
 end
 
 function spawncb(reply)
-    if reply.status==&quot;ok&quot; then
+    if reply.status == alua.ALUA_STATUS_OK then
         local err_message = &quot;Not enough memory!&quot;
         alua.send_event(reply.id, &quot;evt_print_error_msg&quot;, err_message, sendcb)
     end
 end
 
 function conncb(reply)
-    if reply.status==&quot;ok&quot; then
+    if reply.status == alua.ALUA_STATUS_OK then
         local code = [[
             local function handler_print_error_msg(msg)
                 print(&quot;ERROR: &quot; .. msg)
@@ -752,51 +1029,60 @@ alua.loop()
 <!-- SPAWN -->
 <p>&nbsp;</p>
 
-<h4 class="subsection"><a name="alua.spawn" id="alua.spawn"></a>alua.spawn(code, local[, callback])</h4>
+<h4 class="subsection"><a name="alua.spawn" id="alua.spawn"></a>alua.spawn(code, luap[, callback])</h4>
+
 <h4>O que faz</h4>
+
 <p align="justify">Cria um novo processo.</p>
+
 <h4>Descri&ccedil;&atilde;o</h4>
-<p align="justify">Fun&ccedil;&atilde;o para criar um novo processo que ir&aacute; executar o trecho de c&oacute;digo informado no argumento <code class="inline">code</code>. O argumento <code class="inline">local</code> indicar&aacute; onde o novo processo ser&aacute; criado. Caso seja igual a <code class="inline">false</code> o processo ser&aacute; criado e se conectar&aacute; ao mesmo daemon no qual o processo solicitante est&aacute; conectado. Se for igual a <code class="inline">true</code> ser&aacute; associado ao processo solicitante. O argumento <code class="inline">callback</code> &eacute; opcional e indicar&aacute; uma fun&ccedil;&atilde;o para ser chamada de forma ass&iacute;ncrona com o retorno.</p>
+
+<p align="justify">Fun&ccedil;&atilde;o para criar um novo processo que ir&aacute; executar o trecho de c&oacute;digo informado no argumento <code class="inline">code</code>. O argumento <code class="inline">luap</code> indicar&aacute; se o processo criado ser&aacute; um processo Lua associado ao processo solicitando ou se ser&aacute; um processo ALua conectado ao mesmo daemon do processo solicitante. Caso seja igual a <code class="inline">false</code> o processo criado ser&aacute; um processo ALua. Se for igual a <code class="inline">true</code> ser&aacute; criado um processo Lua. O argumento <code class="inline">callback</code> &eacute; opcional e indicar&aacute; uma fun&ccedil;&atilde;o para ser chamada de forma ass&iacute;ncrona com o retorno.</p>
+
 <h4>Valor de retorno</h4>
+
 <p align="justify">Retorna <code class="inline">true</code> se a mensagem foi enviada com sucesso. Caso o processo n&atilde;o esteja conectado &agrave; um deamon s&atilde;o retornados o valores <code class="inline">(false, &quot;not connected&quot;)</code>.</p>
 
 <p align="justify">J&aacute; os valores retornados de forma ass&iacute;ncrona s&atilde;o passados como argumento para a fun&ccedil;&atilde;o de callback em uma tabela com os seguintes campos:</p>
-    <table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
-        <tbody>
-        <tr>
-            <th>Campo</th>
-            <th>Valor</th>
-            <th>Tipo</th>
-        </tr>
-        <tr>
-            <td rowspan="2">status</td>
-            <td>&quot;ok&quot; se o processo foi criado com sucesso</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <td>&quot;error&quot; se ocorreu algum erro</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <td>id</td>
-            <td>identificador do novo processo criado. Se o novo processo for associado ao processo solicitante o formato ser&aacute; &lt;ip&gt;:&lt;port&gt;/&lt;seq&gt;/&lt;seq_pro&gt;. E se for associado ao daemon ser&aacute; &lt;ip&gt;:&lt;port&gt;/&lt;seq&gt;.
-            <td>string</td>
-        </tr>
-        </tbody>
-    </table> 
+
+<table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
+    <tbody>
+    <tr>
+        <th>Campo</th>
+        <th>Valor</th>
+        <th>Tipo</th>
+    </tr>
+    <tr>
+        <td rowspan="2">status</td>
+        <td>alua.ALUA_STATUS_OK se o processo foi criado com sucesso</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>alua.ALUA_STATUS_ERROR se ocorreu algum erro</td>
+        <td>string</td>
+    </tr>
+    <tr>
+        <td>id</td>
+        <td>identificador do novo processo criado. Se o novo processo for um processo Lua o formato ser&aacute; &lt;ip&gt;:&lt;port&gt;/&lt;seq&gt;/&lt;seq_pro&gt;. E se for um processo ALua ser&aacute; &lt;ip&gt;:&lt;port&gt;/&lt;seq&gt;.
+        <td>string</td>
+    </tr>
+    </tbody>
+</table> 
 
 <h4>Exemplo de uso</h4>
-<p align="justify">O c&oacute;digo a seguir cria dois novos processos (um associado ao daemon e outro ao processo solicitante) e imprimi o <a href="#alua.id">alua.id</a> de cada um:</p>
+
+<p align="justify">O c&oacute;digo a seguir cria dois novos processos (um Lua e um ALua) e imprimi o <a href="#alua.id">alua.id</a> de cada um:</p>
+
 <pre class="terminal">require(&quot;alua&quot;)
 
 function spawncb(reply)
-    if reply.status==&quot;ok&quot; then
+    if reply.status == alua.ALUA_STATUS_OK then
         print(reply.id)
     end
 end
 
 function conncb(reply)
-    if reply.status==&quot;ok&quot; then
+    if reply.status == alua.ALUA_STATUS_OK then
         local code = [[
             function hello()
                 print(&quot;Hello!&quot;)
@@ -813,14 +1099,40 @@ alua.loop()
 
 <p><a href ="#api">Voltar ao topo</a></p>
 
+<!-- ALUA_STATUS_ERROR -->
+<p>&nbsp;</p>
+
+<h4 class="subsection"><a name="alua.ALUA_STATUS_ERROR" id="alua.ALUA_STATUS_ERROR"></a>alua.ALUA_STATUS_ERROR</h4>
+
+<h4>Descri&ccedil;&atilde;o</h4>
+
+<p align="justify">Campo para indicar estado de erro de uma mensagem.</p>
+
+<p><a href ="#api">Voltar ao topo</a></p>
+
+<!-- ALUA_STATUS_OK -->
+<p>&nbsp;</p>
+
+<h4 class="subsection"><a name="alua.ALUA_STATUS_OK" id="alua.ALUA_STATUS_OK"></a>alua.ALUA_STATUS_OK</h4>
+
+<h4>Descri&ccedil;&atilde;o</h4>
+
+<p align="justify">Campo para indicar estado de sucesso de uma mensagem.</p>
+
+<p><a href ="#api">Voltar ao topo</a></p>
+
 <!-- UNREG_EVENT -->
 <p>&nbsp;</p>
 
 <h4 class="subsection"><a name="alua.unreg_event" id="alua.unreg_event"></a>alua.unreg_event(event)</h4>
+
 <h4>O que faz</h4>
+
 <p align="justify">Desregistra um tratador de evento definido pelo usu&aacute;rio.</p>
+
 <h4>Descri&ccedil;&atilde;o</h4>
-<p align="justify">Fun&ccedil;&atilde;o para desregistrar o tratador para evento definido pelo usuário, argumento <code class="inline">event</code>. 
+
+<p align="justify">Fun&ccedil;&atilde;o para desregistrar o tratador para evento definido pelo usu&aacute;rio registrado pela fun&ccedil;&atilde;o <a href=#alua.reg_event>alua.reg_event</a>. O argumento <code class="inline">event</code> indica o nome do evento a ser descadastrado e &eacute; do tipo string.</p>
 
 <p><a href ="#api">Voltar ao topo</a></p>
 </body>

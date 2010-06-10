@@ -5,7 +5,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-	<title>ALua: Programação Paralela e Distribuída em Lua</title>
+	<title>ALua: Programa&ccedil;&atilde;o Paralela e Distribu&iacute;da em Lua</title>
 	<meta name="author" content="Felipe Pina">
 
 	<link rel="stylesheet" type="text/css" href="style.css">
@@ -28,18 +28,51 @@
 <h2 class="title" align="center">ALua: Programa&ccedil;&atilde;o Paralela e Distribu&iacute;da em Lua</h2>
 
 <hr>
+<!--<table class="reference" cellspacing="0" cellpadding="0" border="0" width="100%">-->
+<table class="header">
+<tbody>
+	<tr>
+		<td>P&aacute;gina Inicial</td>
+		<td><a href="#download">Download</a></td>
+		<td><a href="#doc">Documenta&ccedil;&atilde;o</a></td>
+	</tr>
+</tbody>
+</table>
+<hr>
 
-<h3 class="section"><a name="download" id="download"></a>Download</h3>
-<table class="download" align="center" cellpadding="20">
-    <tbody>
-    <tr>
-        <td>ALua</td>
-        <td><a href="alua.tar.gz">Download</a></td>
-        <td><a href="#doc">Documenta&ccedil;&atilde;o</a></td>
-    </tr>
-    </tbody>
+<p>O Alua permite a cria&ccedil;&atilde;o de sistemas paralelos e distribu&iacute;dos. Estes sistemas ser&atilde;o composto de processos interligados executando em um ambiente distribu&iacute;do e que realizam troca mensagem entre si. Na figura a seguir temos um exemplo de um sistema ALua.</p>
+
+<p align="center"><img src="./images/alua-exemplo-sistema.png" alt="Sistema ALua" /></p>
+    
+<p>Quantro processos daemons estao formando uma rede (em computadores diferentes) com processos conectado a eles. Assim o processo P1 &eacute; capaz de enviar uma mensagem para o processo P4 atrav&eacute;s da rede de daemons (D1, D2, D3 e D4). Os processos P1, P2, P3, P4, P5 e P6 s&atilde;o processos ALua e este s&atilde;o compostos por um ou mais processos Lua conforme pode ser visto na pr&oacute;xima figura.
+
+<p align="center"><img src="./images/alua-modelo-thread.png" alt="Processo ALua" /></p>
+
+<p>Em cada processo ALua existe um pool de threads que executam o loop de eventos dos seus processos Lua. Assim os tipos de processos que um sistema ALua podem ter sa&#x303;o os seguinte:</p>
+
+<table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
+<tbody>
+	<tr>
+		<th>Tipo</th>
+		<th>Descri&ccedil;&atilde;o</th>
+	</tr>
+	<tr>
+		<td>Daemon</td>
+		<td>&Eacute; o processo responsa&#x301;vel por criar os identificadores u&#x301;nicos dos processos ALua a ele ligados. Este identificar e&#x301; derivado do pro&#x301;prio identificador do daemon que e&#x301; composto pelo seu enderec&#x327;o ip e porta. Uma rede de daemons e&#x301; composta por conexo&#x303;es diretas entre todos os daemons participantes, e estas conexo&#x303;es sa&#x303;o utilizadas para o roteamento de mensagens entre os processos.</td>
+	</tr>
+	<tr>
+		<td>Processo ALua</td>
+		<td>Executa as tarefas de um sistema baseado em ALua. Pode ter diversos processo Lua a ele associados (veja a seguir) e e&#x301; o responsa&#x301;vel pela criac&#x327;a&#x303;o dos seus identificadores u&#x301;nicos. Serve como um roteador para as mensagens recebidos pelos processos Lua sob sua responsabilidade.</td>
+	</tr>
+	<tr>
+		<td>Processo Lua</td>
+		<td>&Eacute; em esse&#x302;ncia um estado Lua (uma insta&#x302;ncia da VM de Lua) e e&#x301; isolado dos demais estados. Assim um processo ALua e&#x301; um processo do SO com um ou diversos processos Lua com apenas um deles sendo o processo principal que ira&#x301; desempenhar as func&#x327;a&#x303;o do processo ALua listadas acima.</td>
+	</tr>
+</tbody>
 </table>
 
+<h3 class="section"><a name="download" id="download"></a>Download</h3>
+<p>Fa&ccedil;a o download do c&oacute;digo fonte <a href="alua.tar.gz">aqui</a>.</p>
 
 <h3 class="section"><a name="doc" id="doc"></a>Documenta&ccedil;&atilde;o</h3>
 

@@ -1,6 +1,11 @@
+img {
+text-align: center;
+}
+
 body {
 	font-family: verdana, sans-serif;
 	font-size: small;
+	text-align: justify;
 	line-height: 150%;  
 	margin-left: 15%;
 	margin-right: 15%;
@@ -119,6 +124,14 @@ font-size: 105% ;
 	float: right ;
 	font-family: inherit ;
 }*/
+
+table.header {
+	width: 100%;
+}
+
+table.header td{
+	text-align: center;
+}
 
 table.reference {
 	border: 1px solid #6b6b6b;
