@@ -25,7 +25,7 @@ local function start(reply)
         alua.inc_threads(30)
     end
 
-    if count < 5000 then
+    if count < 100 then
         alua.send(reply.src, string.format(code, reply.src), start)
         count = count + 1
     else

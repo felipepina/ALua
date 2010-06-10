@@ -7,8 +7,6 @@ local cen = "2.1"
 local suc_msg = "Scenario " .. cen .. ": ok!"
 local err_msg = "Scenario " .. cen .. ": erro!"
 
-require("alua")
-
 local function sendcb(reply)
 	assert(reply.status == "ok", err_msg)
 end

@@ -7,8 +7,6 @@ local cen = "2.5"
 local suc_msg = "Scenario " .. cen .. ": ok!"
 local err_msg = "Scenario " .. cen .. ": erro!"
 
-require("alua")
-
 local function quitcb(reply)
     print(suc_msg)
 

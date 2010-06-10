@@ -9,8 +9,6 @@ local err_msg = "Scenario " .. cen .. ": erro!"
 local proclist = {}
 local count = 0
 
-require("alua")
-
 function finalize(from)
     count = count + 1
     if count == 3 then
