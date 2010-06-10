@@ -118,7 +118,7 @@ function create(code, cb)
             ]], ALUA_THREAD_REPLY, alua.id, idx)
     end
 
-    return ccr.spawn(string.format([[
+    local init_code = [[
         require("alua")
         alua.id = "%s/%s"
         alua.daemonid = %q
@@ -130,7 +130,13 @@ function create(code, cb)
         %s
         -- Loop
         alua.loop()
-        ]], alua.router, nextid(), alua.daemonid, alua.router, pre, code))
+        ]]
+    
+    if code then
+        return ccr.spawn(string.format(init_code, alua.router, nextid(), alua.daemonid, alua.router, pre, code))
+    else
+        return ccr.spawn(string.format(init_code, alua.router, nextid(), alua.daemonid, alua.router, pre, ""))
+    end
 end
 
 -----------------------------------------------------------------------------
