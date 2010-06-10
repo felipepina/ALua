@@ -424,14 +424,19 @@ end -- function execute_reply
 --      cb      the sender callback
 -----------------------------------------------------------------------------
 local function receive_data(msg)
-    data = marshal.decode(msg.data)
+    local succ = nil
+    -- TODO tratar erro na decodificacao
+    local data, error = marshal.decode(msg.data)
     
-    -- Call the event handle if it exists
-    if receive_callback then
-        receive_callback(data)
-        succ = true
-    else
-        succ = false
+    -- Call the event handle if it exists and the data was decoded
+    if not error then
+        if data_handler then
+            data_handler(data)
+            succ = true
+        else
+            succ = false
+            error = "no handle registered in the destination"
+        end
     end
 
     if msg.cb then
@@ -439,15 +444,15 @@ local function receive_data(msg)
             type        = ALUA_RECEIVE_DATA_REPLY,
             src         = alua.id,
             dst         = msg.src,
-            cb          = msg.cb,
+            cb          = msg.cb
         }
 
-        -- If not return a error to the sender
-        if succ then
-            tb.status   = ALUA_STATUS_OK
-        else
-            tb.error    = "no handle registered in the destination"
+        -- Checks for error
+        if error then
+            tb.error    = error
             tb.status   = ALUA_STATUS_ERROR
+        else
+            tb.status   = ALUA_STATUS_OK
         end
 
         routemsg(tb.dst, tb)
@@ -1040,16 +1045,22 @@ end -- function send
 -----------------------------------------------------------------------------
 function send_data(dst, data, cb)
     if alua.id then
+        local encoded_data, error = marshal.encode(data)
+
+        if error then
+            return false, error
+        end
+
         local msg = {
             type    = ALUA_RECEIVE_DATA,
             src     = alua.id,
             dst     = dst,
-            data    = marshal.encode(data)
+            data    = encoded_data
         }
         if cb then
             msg.cb  = setcb(cb)
         end
-
+        
         return routemsg(dst, msg)
     end
     return false, "not connected"
@@ -1214,13 +1225,14 @@ end -- function quit
 -----------------------------------------------------------------------------
 function getdaemons()
     local daemonlist = {}
-    
+
     if alua.id == alua.daemonid then
         for k, v in pairs(daemons) do
             if type(k) == "string" then
                 table.insert(daemonlist, k)
             end
         end
+        table.insert(daemonlist, alua.daemonid)
         -- return pairs(daemons)
         return daemonlist
     else
@@ -1242,12 +1254,18 @@ end -- function getdaemons
 -----------------------------------------------------------------------------
 function send_event(dst, event_type, data, cb)
     if alua.id then
+        local encoded_data, error = marshal.encode(data)
+
+        if error then
+            return false, error
+        end
+
         local msg = {
             type    = ALUA_DISPATCHER,
             usrtype = event_type,
             src     = alua.id,
             dst     = dst,
-            data    = marshal.encode(data)
+            data    = encoded_data
         }
         if cb then
             msg.cb  = setcb(cb)

@@ -49,7 +49,7 @@ local env = {}
 local function dump2(obj, buf)
     local tobj = type(obj)
     if tobj == "thread" or tobj == "userdata" or tobj == "function" then
-        error("unable to serialize " .. tboj)
+        error("unable to serialize " .. tobj)
     end
     if tobj == "table" then
         buf[#buf+1] = "{"
@@ -79,7 +79,8 @@ end
 local function encode2(obj, buf)
     local tobj = type(obj)
     if tobj == "thread" or tobj == "userdata" or tobj == "function" then
-        error("unable to serialize " .. tboj)
+        return "unable to serialize " .. tobj
+       -- error("unable to serialize " .. tobj)
     end
     if tobj == "table" then
         buf[#buf+1] = "type="..types.table..";data={"
@@ -110,11 +111,15 @@ end
 local function decode2(data)
     local tobj, obj = string.match(data, "^type=([^\n]+);data=([^\n]+)")
 
-    if tobj == types.tables then
+    if tobj == types.table then
         local f = loadstring(string.format("return { %s }", obj))
-        setfenv(f, {})
+        setfenv(f, env)
         local succ, val = pcall(f)
-        return val[1]
+        if succ then
+            return val[1]
+        else
+            return nil, "error decoding message"
+        end
     elseif tobj == types.string then
         return obj
     elseif tobj == types.number then
@@ -176,7 +181,10 @@ end
 function decode(buf)
     local ret = {}
     for data in string.gmatch(buf, "([^\n]+)\n") do
-        ret[#ret + 1] = decode2(data)
+        ret[#ret + 1], error = decode2(data)
+        if error then
+            return nil, error
+        end
     end
     return unpack(ret)
 end
@@ -193,8 +201,12 @@ end
 -----------------------------------------------------------------------------
 function encode(obj)
     local buf = {}
-    encode2(obj, buf)
-    return table.concat(buf)
+    local error = encode2(obj, buf)
+    if error then
+        return nil, error
+    else
+        return table.concat(buf)
+    end
 end
 
 -----------------------------------------------------------------------------
