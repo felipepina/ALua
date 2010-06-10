@@ -25,7 +25,7 @@ extern "C"
 using namespace std;
 using namespace tbb;
 
-#define THR_SIZE 3
+#define THR_SIZE 2
 
 // static void* worker(void *arg);
 
@@ -422,7 +422,7 @@ static int ccr_inc_workers(lua_State *L)
         return 1;
     }
 
-    lua_pushnil(L);
+    lua_pushinteger(L, 0);
     lua_pushstring(L, "only a main process could create a new thread");
     return 2;
 }
