@@ -3,7 +3,11 @@
 -- Scenario 3.3
 -----------------------------------------------------------------------------
 
+local cen = "3.3"
+cen = "Scenario " .. cen .. ":"
+
 require("uuid")
 
 id = uuid.create("siv")
+print(cen)
 print(#id, id)
