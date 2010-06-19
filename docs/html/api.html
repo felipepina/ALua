@@ -733,35 +733,7 @@ alua.loop()
     </tbody>
 </table>
 
-<p>A callback que ele chamar&aacute; recebe uma tabela como argumento com os seguintes campos:</p>
-
-<table class="reference" cellspacing="0" cellpadding="0" border="1" width="100%">
-    <tbody>
-    <tr>
-        <th>Campo</th>
-        <th>Valor</th>
-        <th>Tipo</th>
-    </tr>
-    <tr>
-        <td>src</td>
-        <td>identificador do processo remetente (para qual a resposta ser&aacute; enviada)</td>
-        <td>string</td>
-    </tr>
-    <tr>
-        <td>status</td>
-        <!--
-            TODO Colocar link para este dois campos novos
-        -->
-        <td>estado do processamento. alua.ALUA_STATUS_OK ou alua.ALUA_STATUS_ERROR</td>
-        <td>string</td>
-    </tr>
-    <tr>
-        <td>error</td>
-        <td>descri&ccedil;&atilde;o do erro caso o campo status seja alua.ALUA_STATUS_ERROR</td>
-        <td>string</td>
-    </tr>
-    </tbody>
-</table>
+<p>A callback que ele chamar&aacute; recebe dois argumentos: o primeiro &eacute; o status da resposta e o segundo a descri&ccedil;&atilde;o de error e &eacute; opcional.</p>
 
 <p><a href ="#api">Voltar ao topo</a></p>
 
@@ -1011,7 +983,8 @@ function conncb(reply)
     if reply.status == alua.ALUA_STATUS_OK then
         local code = [[
             local function handler_print_error_msg(msg)
-                print(&quot;ERROR: &quot; .. msg)
+                print(&quot;ERROR: &quot; .. msg.data)
+                msg.cb(alua.ALUA_STATUS_OK)
             end
             
             alua.reg_event(&quot;evt_print_error_msg&quot;, handler_print_error_msg)
