@@ -43,14 +43,14 @@ end
 
 
 local function sendcb(reply)
-    assert(reply.status == "ok", err_msg)
+    assert(reply.status == alua.ALUA_STATUS_OK, err_msg)
     
     local code = "start(%q, %q)"
     alua.send(reply.src, string.format(code, alua.id, proc_list[math.random(1, proc_total)]), start)
 end
 
 local function spawncb(reply)
-    assert(reply.status == "ok", err_msg)
+    assert(reply.status == alua.ALUA_STATUS_OK, err_msg)
     
     -- print(reply.id)
 
@@ -65,9 +65,10 @@ local function spawncb(reply)
     end
 end
 
-function conncb(reply)
-	assert(reply.status == "ok", err_msg)
-	
+-- function conncb(reply)
+--  assert(reply.status == "ok", err_msg)
+
+function main()
 	local spawn_code = [=[
         local cen = "1.8"
         local suc_msg = "Scenario " .. cen .. ": ok!"

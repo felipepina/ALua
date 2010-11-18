@@ -64,7 +64,7 @@ end
 --
 -- @param sock The socket
 --
--- @ return The data received
+-- @return The data received
 -----------------------------------------------------------------------------
 function receive(sock)
     local size, err, tmp = sock:receive("*l")
@@ -96,12 +96,13 @@ end
 -----------------------------------------------------------------------------
 function rawsend(name, msg)
     msg = dump(msg)
+    
     err = raw.send(name, tostring(#msg) .. "\n" .. msg)
 
     if err == 0 then
         return true
     else
-        return false, ret
+        return false, err
     end
 end
 
@@ -146,7 +147,7 @@ end
 
 -----------------------------------------------------------------------------
 -- Creates a server socket and registers a handler. When a connection is
--- established with the serverthe client socket will be associated to that
+-- established with the server the client socket will be associated to that
 -- handler. Typically the handler will be send and receive data.
 --
 -- @param ip The ip

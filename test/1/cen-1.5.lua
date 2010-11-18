@@ -11,7 +11,7 @@ local peer_a = nil
 local peer_b = nil
 
 function spawncb(reply)
-	assert(reply.status == "ok", err_msg)
+	assert(reply.status == alua.ALUA_STATUS_OK, err_msg)
 	
 	if not peer_a then
 		peer_a = reply.id
@@ -28,9 +28,10 @@ function spawncb(reply)
 	end
 end
 
-function conncb(reply)
-	assert(reply.status == "ok", err_msg)
-	
+-- function conncb(reply)
+--  assert(reply.status == "ok", err_msg)
+
+function main()
 	local spawn_code = [[
         local cen = "1.5"
         local suc_msg = "Scenario " .. cen .. ": ok!"
@@ -41,7 +42,7 @@ function conncb(reply)
         local peer_id = nil
         
         function quitcb(reply)
-            if reply.status == "ok" then
+            if reply.status == alua.ALUA_STATUS_OK then
                 print(suc_msg)
                 alua.send(alua.daemonid, "alua.quit()")
                 alua.quit()
@@ -50,7 +51,7 @@ function conncb(reply)
          
         function sendcb(reply)
             if peer_id then
-                local ret = assert(reply.status == "ok", err_msg) and assert(reply.src == peer_id, err_msg)
+                local ret = assert(reply.status == alua.ALUA_STATUS_OK, err_msg) and assert(reply.src == peer_id, err_msg)
              
                 local ip, port, id = string.match(alua.id, "^(%d+%.%d+%.%d+%.%d+):(%d+)/(%d+)")
              

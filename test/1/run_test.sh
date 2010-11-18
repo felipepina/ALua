@@ -1,7 +1,7 @@
 #!/bin/bash
 
-./cen-1.1.sh
-sleep 5
+# ./cen-1.1.sh
+# sleep 5
 ./cen-1.2.sh
 sleep 5
 ./cen-1.3.sh

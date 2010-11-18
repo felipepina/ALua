@@ -3,7 +3,7 @@ SYSNAME=$(shell uname)
 include ../configure
 
 # Library names
-LIBS=-luuid
+LIBS=-luuid -lcrypto
 # LIBS=-lossp-uuid
 
 ifeq ($(SYSNAME),Darwin)

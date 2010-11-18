@@ -8,13 +8,13 @@ local suc_msg = "Scenario " .. cen .. ": ok!"
 local err_msg = "Scenario " .. cen .. ": erro!"
 
 local function spawncb(reply)
-	assert(reply.status == "ok", err_msg)
+	assert(reply.status == alua.ALUA_STATUS_OK, err_msg)
 	alua.quit()
 end
 
-function conncb(reply)
-	assert(reply.status == "ok", err_msg)
-	
+-- function conncb(reply)
+--  assert(reply.status == "ok", err_msg)
+function main()	
 	local spawn_code = [[
     	local cen = "1.4"
         local suc_msg = "Scenario " .. cen .. ": ok!"
@@ -23,7 +23,7 @@ function conncb(reply)
         local ret = false
     
 		local function sendcb(reply)
-			ret = assert(reply.status == "ok", err_msg) and assert(reply.src == alua.daemonid, err_msg)
+			ret = assert(reply.status == alua.ALUA_STATUS_OK, err_msg) and assert(reply.src == alua.daemonid, err_msg)
 
 			if ret then
 				print(suc_msg)

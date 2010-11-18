@@ -8,6 +8,7 @@ local suc_msg = "Scenario " .. cen .. ": ok!"
 local err_msg = "Scenario " .. cen .. ": erro!"
 local proclist = {}
 local count = 0
+local daemonlist = {"127.0.0.1:8888/0", "127.0.0.1:8889/0", "127.0.0.1:8890/0"}
 
 function finalize(from)
     count = count + 1
@@ -46,9 +47,7 @@ local function setdaemon(reply)
 	alua.send(reply.src, code, sendcb)
 end
 
-local function linkcb(reply)
-    assert(reply.status == "ok", err_msg)
-	
+function main()
     local daemon_code = [=[
         local cen = "2.4"
         local suc_msg = "Scenario " .. cen .. ": ok!"
@@ -95,13 +94,8 @@ local function linkcb(reply)
         end
     ]=]
     
-	for i, daemon in ipairs(reply.daemons) do
+	for i, daemon in ipairs(daemonlist) do
 		local code = "create_pro(\"" .. alua.id .. "\")"
 		alua.send(daemon, daemon_code, setdaemon)
 	end
-end
-
-function conncb(reply)
-	assert(reply.status == "ok", err_msg)
-	alua.link(daemonlist, linkcb)
 end

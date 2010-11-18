@@ -14,10 +14,16 @@ local event   = require("alua.event")
 local uuid    = require("uuid")
 
 -----------------------------------------------------------------------------
+-- Local aliases
+-----------------------------------------------------------------------------
+local setcb     = event.setcb
+local getcb     = event.getcb
+
+-----------------------------------------------------------------------------
 -- Modules variables
 -----------------------------------------------------------------------------
-local pending = {}
-local callbacks = {}
+-- local pending = {}
+-- local callbacks = {}
 
 -- Thread reply event name
 ALUA_THREAD_REPLY = "alua-thread-reply"
@@ -42,12 +48,12 @@ end
 --
 -- @return the callback id
 -----------------------------------------------------------------------------
-local function setcb(cb)
-    local idx = #pending + 1
-    pending[idx]    = true
-    callbacks[idx]  = cb
-    return idx
-end
+-- local function setcb(cb)
+--     local idx = #pending + 1
+--     pending[idx]    = true
+--     callbacks[idx]  = cb
+--     return idx
+-- end
 
 -----------------------------------------------------------------------------
 -- Gets a thread's callback
@@ -56,12 +62,12 @@ end
 --
 -- @return the callcack
 -----------------------------------------------------------------------------
-local function getcb(idx)
-    local cb = callbacks[idx]
-    pending[idx]    = nil
-    callbacks[idx]  = nil
-    return cb
-end
+-- local function getcb(idx)
+--     local cb = callbacks[idx]
+--     pending[idx]    = nil
+--     callbacks[idx]  = nil
+--     return cb
+-- end
 
 -----------------------------------------------------------------------------
 -- End auxiliary functions

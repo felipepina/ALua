@@ -9,12 +9,10 @@ local err_msg = "Scenario " .. cen .. ": erro!"
 
 local ret = false
 
-function conncb(reply)
-    ret = assert(reply.status == "ok", err_msg)
-    
-    if ret then
-     print(suc_msg)
-     alua.send(alua.daemonid, "alua.quit()")
-     alua.quit()
-    end
+-- function conncb(reply)
+--     ret = assert(reply.status == "ok", err_msg)
+function main()
+    print(suc_msg)
+    alua.send(alua.daemonid, "alua.quit()")
+    alua.quit()
 end

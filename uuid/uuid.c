@@ -30,6 +30,7 @@ static int create(lua_State *L)
         lua_pushstring(L, "invalid format");
         return 2;
     }
+    
     uuid_create(&uuid);
     uuid_make(uuid, UUID_MAKE_V1 | flag);
     uuid_export(uuid, fmt, &str, &len);
@@ -42,6 +43,54 @@ static int create(lua_State *L)
     return 1;
 }
 
+/*
+    TODO Pensar em uma forma alternativa para gerar o hash de um identificador
+*/
+// static int hash(lua_State *L)
+// {
+//     uuid_t *hash;
+//     uuid_t *uuid;
+// 
+//     char *str = NULL;
+//     
+//     const char *uuid_str = luaL_checkstring(L, 1);
+//     const char *url = luaL_checkstring(L, 2);
+//     
+//     uuid_create(&uuid);
+//     uuid_import(uuid, UUID_FMT_STR, uuid_str, strlen(uuid_str));
+// 
+//     uuid_create(&hash);
+//     uuid_make(hash, UUID_MAKE_V5, uuid, url);
+//     uuid_export(uuid, UUID_FMT_SIV, &str, NULL);
+//     uuid_destroy(hash);
+//     uuid_destroy(uuid);
+//     lua_pushstring(L, str);
+//     free(str);
+//     return 1;
+// }
+
+static int hash(lua_State *L)
+{
+    
+    
+    // unsigned char *SHA1(const unsigned char *d, unsigned long n, unsigned char *md);
+    unsigned char hash[SHA_DIGEST_LENGTH];
+    const char *id = luaL_checkstring(L, 1);
+    
+    // printf("%s\n", id);
+    
+    SHA1(id, strlen(id), hash);
+    
+    // int i;
+    // for (i = 0; i < SHA_DIGEST_LENGTH; i++) {
+    //     printf("%02x", hash[i]);
+    // }
+    // printf("\n");
+
+    // return a bit string
+    lua_pushstring(L, hash);
+    return 1;
+}
 
 /*
  * List of the exported functions
@@ -49,6 +98,7 @@ static int create(lua_State *L)
 static luaL_Reg funcs[] =
 {
     {"create", create},
+    {"hash", hash},
     {NULL,     NULL}
 };
 

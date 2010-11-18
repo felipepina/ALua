@@ -7,5 +7,5 @@ sleep 5
 ./cen-2.3.sh
 sleep 5
 ./cen-2.4.sh
-sleep 5
-./cen-2.5.sh
+# sleep 5
+# ./cen-2.5.sh

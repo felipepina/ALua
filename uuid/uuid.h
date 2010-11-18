@@ -1,5 +1,6 @@
 #ifndef UUID_H
 #define UUID_H
+
 /*=========================================================================*\ 
  * UUID - Universally Unique Identifier
  * Library to create uuid (Universally Unique Identifier). Interface to the
@@ -11,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ossp/uuid.h>
+#include <openssl/sha.h>
 #include <lua.h>
 #include <lauxlib.h>
 
@@ -25,4 +27,12 @@
  * @return The uuid created
  */
 static int create(lua_State *L);
+
+/**
+ * Generates a hash
+ * @param id
+ *
+ * @return The uuid hash
+ */
+static int hash(lua_State *L);
 #endif                                            /* UUID_H */

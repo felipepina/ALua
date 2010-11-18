@@ -6,13 +6,14 @@
 local cen = "2.2"
 local suc_msg = "Scenario " .. cen .. ": ok!"
 local err_msg = "Scenario " .. cen .. ": erro!"
+local daemonlist = {"127.0.0.1:8888/0", "127.0.0.1:8889/0", "127.0.0.1:8890/0"}
 
 local function sendcb(reply)
-	assert(reply.status == "ok", err_msg)
+	assert(reply.status == alua.ALUA_STATUS_OK, err_msg)
 end
 
 local function setfuncb(reply)
-	assert(reply.status == "ok", err_msg)
+	assert(reply.status == alua.ALUA_STATUS_OK, err_msg)
     
     local code = "sendtodaemon(%q)"
     
@@ -25,9 +26,7 @@ local function setfuncb(reply)
 	end
 end
 
-local function linkcb(reply)
-	assert(reply.status == "ok", err_msg)
-	
+function main()
 	local funcode = [[
     	local cen = "2.2"
         local suc_msg = "Scenario " .. cen .. ": ok!"
@@ -53,7 +52,7 @@ local function linkcb(reply)
         end
 
         local function sendcb(reply)
-            local ret = assert(reply.status == "ok", err_msg) and assert(reply.src == peer_id, err_msg)
+            local ret = assert(reply.status == alua.ALUA_STATUS_OK, err_msg) and assert(reply.src == peer_id, err_msg)
             local ip, port, id = string.match(alua.id, "^(%d+%.%d+%.%d+%.%d+):(%d+)/(%d+)")
             alua.send(ip .. ":8888/0", string.format("finalize(%q)", alua.id))
         end
@@ -64,12 +63,7 @@ local function linkcb(reply)
     	    alua.send(peer_id, code, sendcb)
         end]]
 
-	alua.send(reply.daemons[1], funcode, setfuncb)
-	alua.send(reply.daemons[2], funcode, setfuncb)
-	alua.send(reply.daemons[3], funcode, setfuncb)
-end
-
-function conncb(reply)
-	assert(reply.status == "ok", err_msg)
-	alua.link(daemonlist, linkcb)
+	alua.send(daemonlist[1], funcode, setfuncb)
+	alua.send(daemonlist[2], funcode, setfuncb)
+	alua.send(daemonlist[3], funcode, setfuncb)
 end
