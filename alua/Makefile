@@ -10,11 +10,13 @@ OBJS2=\
 	alua/group.lua \
 	alua/marshal.lua \
 	alua/mbox.lua \
+	alua/message.lua \
 	alua/network.lua \
 	alua/task.lua \
 	alua/tcp.lua \
 	alua/thread.lua \
-	alua/timer.lua
+	alua/timer.lua \
+	alua/util.lua
 OBJS3=\
 	alua/dht/route.lua \
 	alua/dht/storage.lua

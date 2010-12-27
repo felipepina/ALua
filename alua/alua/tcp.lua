@@ -117,6 +117,10 @@ end
 -----------------------------------------------------------------------------
 function send(sock, msg)
     --msg = dump(msg) .. string.rep(" ", 4096)
+    if not sock then
+        return false, "invalid socket"
+    end
+
     msg = dump(msg)
     local n, err = sock:send(tostring(#msg) .. "\n" .. msg)
     if err then
@@ -177,7 +181,9 @@ end
 -----------------------------------------------------------------------------
 function connect(ip, port, handler)
     local s, err = socket.connect(ip, port)
-    if err then return nil, err end
+    if err then
+        return nil, err
+    end
     s:setoption("tcp-nodelay", true)
     socks[s] = handler
     return s

@@ -35,4 +35,9 @@ static int create(lua_State *L);
  * @return The uuid hash
  */
 static int hash(lua_State *L);
+
+static int min_hash(lua_State *L);
+
+static int max_hash(lua_State *L);
+
 #endif                                            /* UUID_H */

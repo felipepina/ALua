@@ -7,6 +7,7 @@ local cen = "9.1"
 local suc_msg = "Scenario " .. cen .. ": ok!"
 local err_msg = "Scenario " .. cen .. ": erro!"
 
+local daemonlist = {"127.0.0.1:8888/0", "127.0.0.1:8889/0", "127.0.0.1:8890/0"}
 local tdlist = {}
 local result = true
 
@@ -46,8 +47,8 @@ local function setfuncb(reply)
 
 end
 
-local function linkcb(reply)
-	assert(reply.status == alua.ALUA_STATUS_OK, err_msg)
+function main()
+	alua.reg_data_handler(data_handler)
 	
 	local funcode = [[
         function dlist(from)
@@ -57,14 +58,14 @@ local function linkcb(reply)
         end
     ]]
 
-	alua.send(reply.daemons[1], funcode)
-	alua.send(reply.daemons[2], funcode)
-	alua.send(reply.daemons[3], funcode, setfuncb)
+	alua.send(daemonlist[1], funcode)
+	alua.send(daemonlist[2], funcode)
+	alua.send(daemonlist[3], funcode, setfuncb)
 end
 
-function conncb(reply)
-	assert(reply.status == alua.ALUA_STATUS_OK, err_msg)
-	alua.link(daemonlist, linkcb)
-end
+-- function conncb(reply)
+--  assert(reply.status == alua.ALUA_STATUS_OK, err_msg)
+--  alua.link(daemonlist, linkcb)
+-- end
 
-alua.reg_data_handler(data_handler)
+-- alua.reg_data_handler(data_handler)

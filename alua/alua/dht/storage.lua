@@ -59,9 +59,14 @@ end
 --      type    DHT_INS_PAIR_REQUEST
 -----------------------------------------------------------------------------
 function insert_pair_request(request)
+    -- TODO Colocar o mecanismo de replicação
+    -- Em nós próximos ou usando outra função de hash?
+    -- Se for nos nós próximos basta enviar eventos para os vizinhos deste ponto
+    -- Se for usar uma outra função de hash será feito na função insert_pair
     debug_msg("insert_pair_request:begin")
     local key = request.key
     local value = request.value
+    
     local status, error_msg = nil
 
     if not data[key] then
@@ -73,13 +78,6 @@ function insert_pair_request(request)
         error_msg = "Key already defined"
     end
     -- TODO Colocar msg de erro caso já exista a chave
-
-    -- print("DHT_INS_PAIR:BEGIN")
-    -- for k,v in pairs(data) do
-    --     print(k,v)
-    -- end
-    -- print("DHT_INS_PAIR:END")
-
     if request.cb then
         local reply = {
             type    = DHT_INS_PAIR_REPLY,

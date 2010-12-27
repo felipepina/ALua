@@ -15,9 +15,11 @@ local timer     = require("alua.timer")
 -----------------------------------------------------------------------------
 -- Modules variables
 -----------------------------------------------------------------------------
-local_node_id = nil
+
+local_id = nil
+
 -- In seconds
-rebuild_interval = 120
+check_interval = 1
 
 -- Message status
 DHT_STATUS_OK      = "ok"
@@ -31,26 +33,30 @@ insert_pair = storage.insert_pair
 delete_pair = storage.delete_pair
 lookup      = storage.lookup
 
-init        = route.init
-join        = route.join
-leave       = route.leave
-routemsg    = route.routemsg
-get_nodes   = route.get_nodes
-
+init                    = route.init
+join                    = route.join
+leave                   = route.leave
+routemsg                = route.routemsg
+routeMulticastMessage   = route.routeMulticastMessage
+get_nodes               = route.get_nodes
+print_neighbor          = route.print_neighbor
 
 -----------------------------------------------------------------------------
 -- Auxiliary functions
 -----------------------------------------------------------------------------
-local function rebuild()
-    route.rebuild()
-    timer.settimer(rebuild_interval, rebuild)
+local function checkneighbors()
+    print("Checking neighbors")
+    route.stabilize()
+    -- timer.settimer(check_interval, rebuild)
+    timer.settimer(check_interval, checkneighbors)
 end
 -----------------------------------------------------------------------------
 -- End auxiliary functions
 -----------------------------------------------------------------------------
 
 -- Register a timer to periodically rebuild the DHT network
-timer.settimer(rebuild_interval, rebuild)
+-- timer.settimer(check_interval, checkneighbors)
+timer.settimer(check_interval, checkneighbors)
 
 -----------------------------------------------------------------------------
 -- End alua.dht

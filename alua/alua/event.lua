@@ -8,6 +8,9 @@
 
 module("alua.event", package.seeall)
 
+-- TODO separar os eventos de cada módulo em tabelas independentes
+-- de modo a evitar a sobreposicao no registro de tratadores
+
 -----------------------------------------------------------------------------
 -- Module variables
 -----------------------------------------------------------------------------
@@ -15,6 +18,7 @@ local events = {}
 
 local callbacks = {}
 local pending = {}
+local persist = {}
 
 local contexts = {}
 -----------------------------------------------------------------------------
@@ -47,11 +51,37 @@ end -- function setcb
 function getcb(idx)
     local cb = callbacks[idx]
     local ctx = contexts[idx]
-    pending[idx] = nil
-    contexts[idx] = nil
-    callbacks[idx] = nil
+    if not persist[idx] then
+        pending[idx] = nil
+        contexts[idx] = nil
+        callbacks[idx] = nil
+    else
+        persist[idx] = persist[idx] - 1
+        if persist[idx] == 0 then
+            pending[idx] = nil
+            contexts[idx] = nil
+            callbacks[idx] = nil
+        end
+    end
     return cb, ctx
 end -- function getcb
+
+-----------------------------------------------------------------------------
+-- Sets the callback function within a context
+--
+-- @param cb The callback
+-- @param ctx The context
+--
+-- @return The callback id
+-----------------------------------------------------------------------------
+function setpcb(cb, qtd)
+    local idx = #pending + 1
+    pending[idx] = true
+    persist[idx] = qtd
+    -- contexts[idx] = ctx
+    callbacks[idx] = cb
+    return idx
+end -- function setcb
 
 -----------------------------------------------------------------------------
 -- Set a context

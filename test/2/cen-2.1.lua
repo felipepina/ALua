@@ -60,6 +60,6 @@ function main()
     	    alua.send(peer_id, code, sendcb)
         end]]
         
-	alua.send(daemonlist[1], funcode, setfuncb)
-	alua.send(daemonlist[2], funcode, setfuncb)
+    alua.send(daemonlist[1], funcode, setfuncb)
+    alua.send(daemonlist[2], funcode, setfuncb)
 end

@@ -72,23 +72,69 @@ static int create(lua_State *L)
 static int hash(lua_State *L)
 {
     
+    // size_t hash(const string &key) const
+    // {
+    //     size_t h;
+    //     int i, size;
+    //     unsigned char *str;
+    //     h = size = key.size();
+    //     str = (unsigned char*)key.c_str();
+    //     for (i = 0; i < size; i++)
+    //         h = h ^ ((h<<5)+(h>>2)+str[i]);
+    //     return h;
+    // }
+    
+    
+    //     public final int hashCode() {
+    //  int result = 19;
+    //  for (int i = 0; i < this.id.length; i++) {
+    //      result = 13 * result + this.id[i];
+    //  }
+    //  return result;
+    // }
     
     // unsigned char *SHA1(const unsigned char *d, unsigned long n, unsigned char *md);
     unsigned char hash[SHA_DIGEST_LENGTH];
     const char *id = luaL_checkstring(L, 1);
-    
-    // printf("%s\n", id);
-    
+
     SHA1(id, strlen(id), hash);
-    
+
     // int i;
     // for (i = 0; i < SHA_DIGEST_LENGTH; i++) {
-    //     printf("%02x", hash[i]);
+    //     printf("%d ", hash[i]);
     // }
     // printf("\n");
 
     // return a bit string
-    lua_pushstring(L, hash);
+    lua_pushlstring(L, hash, SHA_DIGEST_LENGTH);
+    return 1;
+}
+
+
+static int min_hash(lua_State *L)
+{
+    unsigned char min[SHA_DIGEST_LENGTH];
+    
+    int i;
+    for (i = 0; i < SHA_DIGEST_LENGTH; i++) {
+        min[i] = 0;
+    }
+    
+    lua_pushlstring(L, min, SHA_DIGEST_LENGTH);
+    return 1;
+}
+
+
+static int max_hash(lua_State *L)
+{
+    unsigned char max[SHA_DIGEST_LENGTH];
+    
+    int i;
+    for (i = 0; i < SHA_DIGEST_LENGTH; i++) {
+        max[i] = 255;
+    }
+
+    lua_pushlstring(L, max, SHA_DIGEST_LENGTH);
     return 1;
 }
 
@@ -99,6 +145,8 @@ static luaL_Reg funcs[] =
 {
     {"create", create},
     {"hash", hash},
+    {"min_hash", min_hash},
+    {"max_hash", max_hash},
     {NULL,     NULL}
 };
 

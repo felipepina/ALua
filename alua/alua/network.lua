@@ -16,13 +16,11 @@ local tcp       = require("alua.tcp")
 local dht       = require("alua.dht")
 local marshal   = require("alua.marshal")
 local raw       = require("rawsend")
+local util      = require("alua.util")
 
 -----------------------------------------------------------------------------
 -- Global variables
 -----------------------------------------------------------------------------
-local nodeid_pattern = "^(%d+%.%d+%.%d+%.%d+:%d+/%d+)"
-local daemonid_pattern = "^(%d+%.%d+%.%d+%.%d+:%d+)"
-
 local count = 0
 prefix = nil
 connecting = false
@@ -35,6 +33,15 @@ local ALUA_AUTH         = "alua-auth"
 local ALUA_AUTH_REPLY   = "alua-auth-reply"
 local ALUA_ROUTE        = "alua-route"
 local ALUA_ROUTE_REPLY  = "alua-route-reply"
+
+-----------------------------------------------------------------------------
+-- Local aliases
+-----------------------------------------------------------------------------
+
+local isTable       = util.isTable
+local copyTable     = util.copyTable
+local get_parentid  = util.get_parentid
+local get_daemonid  = util.get_daemonid
 
 -----------------------------------------------------------------------------
 -- Auxiliary functions
@@ -63,6 +70,7 @@ local ALUA_ROUTE_REPLY  = "alua-route-reply"
 --     end
 --     return conn
 -- end -- function nexthop
+
 
 -----------------------------------------------------------------------------
 -- Generates the next sequencial to a process
@@ -181,38 +189,31 @@ end -- function auth_reply
 -----------------------------------------------------------------------------
 local function route(tmp)
     local msg = tmp.message
-    -- Sees if the message is to itself
-    if msg.dst == alua.id then
-        -- Put the sender's socket
-        -- TODO COMENTADO
-        -- msg.sock = tmp.sock
-        -- Process the message (event)
-        event.process(msg)
-    else -- Route the message
-
-        -- print("BEGIN:ALUA.ROUTE")
-        -- print(alua.id)
-        -- for k,v in pairs(tmp) do
-        --     print(k,v)
-        -- end
-        -- print("----")
-        -- for k,v in pairs(msg) do
-        --     print(k,v)
-        -- end
-        -- print("END:ALUA.ROUTE")
-
-        local succ, e = routemsg(msg.dst, msg)
-        -- If the message has a status, it is a reply: discart it.
-        if e and msg.cb and not msg.status then
-            local tb = {
-                type    = ALUA_ROUTE_REPLY,
-                src     = alua.id,
-                dst     = msg.src,
-                status  = alua.ALUA_STATUS_ERROR,
-                error   = e,
-                cb      = msg.cb,
-            }
-            routemsg(msg.src, tb)
+    if isTable(msg.dst) then
+        routemsg(msg.dst, msg)
+    else
+        -- Sees if the message is to itself
+        if msg.dst == alua.id then
+            -- Put the sender's socket
+            -- TODO WORKAROUND
+            -- msg.sock = tmp.sock
+            -- Process the message (event)
+            event.process(msg)
+        else -- Route the message
+            local succ, e = routemsg(msg.dst, msg)
+            -- If the message has a status, it is a reply: discart it.
+            if e and msg.cb and not msg.status then
+                local tb = {
+                    type    = ALUA_ROUTE_REPLY,
+                    src     = alua.id,
+                    dst     = msg.src,
+                    status  = alua.ALUA_STATUS_ERROR,
+                    error   = e,
+                    cb      = msg.cb,
+                    ori_dst = msg.dst
+                }
+                routemsg(msg.src, tb)
+            end
         end
     end
 end -- function route
@@ -228,10 +229,16 @@ end -- function route
 --      dst     the sender's id
 --      cb      the sender's callback
 -----------------------------------------------------------------------------
-local function route_reply(msg)
-    local cb = getcb(msg.cb)
+local function route_reply(reply)
+    local cb = event.getcb(reply.cb)
     -- Use the most general fields in the message
-    cb({status=msg.status, error=msg.error})
+    cb({
+        status  = reply.status,
+        error   = reply.error,
+        -- src     = reply.src,
+        -- dst     = reply.dst,
+        ori_dst = reply.ori_dst
+        })
 end -- function route_reply
 
 
@@ -317,23 +324,6 @@ end -- function create
 --         false and the error message if there's a error
 -----------------------------------------------------------------------------
 function link(node, cb)
-    -- if alua.id then
-    --     local tb = {
-    --         type    = ALUA_LINK_START,
-    --         list    = list,
-    --         src     = alua.id,
-    --         dst     = alua.daemonid,
-    --     }
-    --     if cb then
-    --         tb.cb   = setcb(cb)
-    --     end
-    --     return routemsg(tb.dst, tb)
-    -- end
-    -- return false, "not connected"
-    -- TODO Verificar se o processo que recebeu a solicitacão é um deamon
-    -- se for envia para a camada DHT
-    -- se não encaminha a menssagem para o daemon
-    
     if alua.isdaemon then
         return dht.join(node, cb)
     else
@@ -351,51 +341,95 @@ end -- function link
 --         False and the error message when there's a error
 -----------------------------------------------------------------------------
 function routemsg(dst, msg)
-    -- The destination is itself? If so put in the task queue
-    if dst == alua.id then
-        task.schedule(event.process, msg)
-        return true
-    else
-        -- The destination is in same ALua process?
-        -- If true, sends through the intra-process queue (CCR)
-        local proc = string.match(dst, nodeid_pattern)
-        if proc == string.match(alua.id, nodeid_pattern) then
-            return mbox.send(dst, msg)
+    -- Multicast message
+    if isTable(dst) then
+        local dstlist = {}
+        for i, proc in ipairs(dst) do
+            local proc_daemon = get_daemonid(proc)
+        
+            if proc_daemon == alua.daemonid then
+                local message = copyTable(msg)
+                message.dst = proc
+
+                local packed_msg = {
+                    type    = ALUA_ROUTE,
+                    message = message
+                }
+                
+                event.process(packed_msg)
+            else
+                table.insert(dstlist, proc)
+            end
+        end
+    
+        local multicastMessage = copyTable(msg)
+        multicastMessage.dst = dstlist
+    
+        msg = {
+            type    = ALUA_ROUTE,
+            message = multicastMessage
+        }
+    
+        if alua.isdaemon then
+            return dht.routeMulticastMessage(dstlist, msg)
         else
-            -- Routes the message: send to router or daemon
-            msg = {
-                type    = ALUA_ROUTE,
-                message = msg
-            }
-            if alua.isdaemon then -- Send to router
-                local dst_daemon = string.match(dst, daemonid_pattern)
+            return tcp.rawsend(alua.daemonid, msg)
+        end
+    else
+        -- The destination is itself? If so put in the task queue
+        if dst == alua.id then
+            task.schedule(event.process, msg)
+            return true
+        else
+            local proc = get_parentid(dst)
 
-                -- Verifies if the destination is a node
-                if dst_daemon then
-                    dst_daemon = dst_daemon .. "/0"
-                else
-                    dst_daemon = dst
-                end
+            -- The destination is in same ALua process so sends through the intra-process queue (CCR)
+            if proc == get_parentid(alua.id) then
+                return mbox.send(dst, msg)
+            else
+                if alua.isdaemon then -- Send to a Alua process or to other daemon through the DHT network
+                    local dst_daemon = get_daemonid(dst)
 
-                -- If the dst is in the same daemon
-                if dst_daemon == alua.daemonid then
-                    -- TODO Verificar se existe a conexao (socket) com o proc
-                    return tcp.send(processes[proc], msg)
-                -- Else route the msg throught the DHT network
-                else
-                    if not proc then
-                        msg = msg.message
+                    if dst_daemon == alua.daemonid then -- The destination is in the same daemon
+                        msg = {
+                            type    = ALUA_ROUTE,
+                            message = msg
+                        }
+                        
+                        if processes[proc] then
+                            return tcp.send(processes[proc], msg)
+                        else
+                            return false, "unknown destination"
+                        end
+                    else -- The destination is other daemon so route throught the DHT network
+                        local dht_dst = nil
+                    
+                        if not proc then
+                            dht_dst = dst -- It's not a process, so the dst is the key
+                            -- msg = msg.message
+                        else
+                            dht_dst = dst_daemon -- The process daemon to route through the DHT network
+                            msg = {
+                                type    = ALUA_ROUTE,
+                                message = msg,
+                                dst     = dst
+                            }
+                        end
+
+                        return dht.routemsg(dht_dst, msg)
                     end
-                    msg.dst = dst
-                    return dht.routemsg(dst_daemon, msg)
+                else -- Send to daemon
+                    msg = {
+                        type    = ALUA_ROUTE,
+                        message = msg
+                    }
+
+                    return tcp.rawsend(alua.daemonid, msg)
                 end
-            else -- Send to daemon
-                return tcp.rawsend(alua.daemonid, msg)
             end
         end
     end
 end -- function routemsg
-
------------------------------------------------------------------------------
+---------------------------------------------------------------
 -- End exported functions
 -----------------------------------------------------------------------------
